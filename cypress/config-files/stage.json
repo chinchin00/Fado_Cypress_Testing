@@ -1,0 +1,6 @@
+{
+    "baseUrl": "https://staging.fado.vn/",
+    "env": {
+      "environment": "stage"
+    }
+  }

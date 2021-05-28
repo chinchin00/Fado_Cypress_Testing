@@ -1,0 +1,10 @@
+{
+  "specName": "booth.spec.js",
+  "title": "Check exist product",
+  "suiteName": "Check booth",
+  "testName": "Check booth Check exist product",
+  "testError": "An invalid RouteMatcher was supplied to `cy.intercept()`. An unknown `RouteMatcher` property was passed: `failOnStatusCode`\n\nValid `RouteMatcher` properties are: https, port, middleware, auth.username, auth.password, hostname, method, path, pathname, url, headers, query, auth\n\n          You passed: {\n  \"url\": {},\n  \"failOnStatusCode\": false\n}\n\nhttps://on.cypress.io/intercept",
+  "testCommands": [
+    "intercept {url: /^https:\\/\\/staging\\.fado\\.vn/, failonstatuscode: false}, function(){}"
+  ]
+}

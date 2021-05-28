@@ -1,0 +1,13 @@
+File Package.Json:
+    **Run cypress with command "npm run test"**
+    **Open Electron with command "npm run headTest", it will run test, then open Electron semilar command "cypress open"**
+
+     "scripts": {
+        "test": "node_modules\\.bin\\cypress run",
+        "headTest": "npm run test -- --headed",
+        "chormeTest": "npm run test -- --browser chrome",
+        "specTest": "npm run test -- --spec \"cypress/integration/page/checkoutPage/*\"",
+        "recordDashBoardTest": "npm run test -- --record --key 902ccae1-7204-4c98-a5c4-bbdd8976aecb --reporter mochawesome"
+      },
+
+Log fail bug: https://www.npmjs.com/package/cypress-failed-log

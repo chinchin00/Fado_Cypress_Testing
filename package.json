@@ -1,0 +1,20 @@
+{
+  "name": "automation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "cypress:open": "cypress open",
+    "test": "node_modules\\.bin\\cypress run --env fileConfig=production",
+    "cy:development": "cypress open --env fileConfig=development",
+    "cy:stage": "cypress open --env fileConfig=stage",
+    "cy:production": "cypress open --env fileConfig=production",
+    "specTest": "npm run test -- --spec \"cypress/integration/page/checkoutPage/*\" --no-exit"
+  },
+  "author": "TrinhNT",
+  "license": "ISC",
+  "devDependencies": {
+    "cypress": "^7..0",
+    "cypress-failed-log": "^2.9.1"
+  }
+}

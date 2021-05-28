@@ -1,0 +1,12 @@
+{
+    "email": "trinh1@yopmail.com",
+    "email2": "emailnoaddress@yopmail.com",
+    "emailStaging": "trinhnt@miczone.asia",
+    "emailInvalid": "trihnt@miczone.asia",
+    "emailFirstSpace": " trinhnt@miczone.asia",
+    "emailLastSpace": "trinhnt@miczone.asia  ",
+    "password": "123456789",
+    "passwordStaging": "123456",
+    "passwordInvalid": "123459",
+    "passEmail2": "123456"
+}

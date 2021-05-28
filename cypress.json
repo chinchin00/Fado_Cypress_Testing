@@ -1,0 +1,8 @@
+{
+  "projectId": "2ms174",
+  "redirectionLimit": 50,
+  "retries": {
+    "runMode": 2,
+    "openMode": 1
+  }
+}
