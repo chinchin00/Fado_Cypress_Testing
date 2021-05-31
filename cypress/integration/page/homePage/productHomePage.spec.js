@@ -174,7 +174,4 @@ describe('CHECK PRODUCT IN HOME PAGE', () => {
         const home = new HomePage()
         checkSuggestProduct()
     })
-
-    // check Banner
-    
 })
