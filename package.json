@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
     "test": "node_modules\\.bin\\cypress run --env fileConfig=production",
     "cy:development": "cypress open --env fileConfig=development",
     "cy:stage": "cypress open --env fileConfig=stage",
