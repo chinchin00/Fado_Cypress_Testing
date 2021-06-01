@@ -1,0 +1,8 @@
+{
+  "baseUrl": "https://fado.vn/",
+  "env": {
+    "environment": "docker"
+  },
+  "screenshotOnRunFailure": false,
+  "video": false
+}
