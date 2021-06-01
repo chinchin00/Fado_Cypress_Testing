@@ -1,7 +1,7 @@
 #!/bin/bash
 
 docker run \
-    --name miczone_common-kafka_cluster \
+    --name fado-cypress-testing \
     \
     -it --rm \
     \
@@ -9,7 +9,7 @@ docker run \
     \
     -w /e2e \
     \
-    -e CYPRESS_VIDEO=false \
+    -e CYPRESS_ENV_NAME=docker \
     \
     --network=bridge \
     \

@@ -37,7 +37,7 @@ module.exports = (on, config) => {
     failed: require("cypress-failed-log/src/failed")(),
   });
 
-  const envName = config.env.fileConfig || "production";
+  const envName = config.env.ENV_NAME || "production";
 
   return getConfigurationByEnvName(envName);
 };

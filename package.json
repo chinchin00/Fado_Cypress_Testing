@@ -6,11 +6,11 @@
   "scripts": {
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
-    "test": "node_modules\\.bin\\cypress run --env fileConfig=production",
-    "cy:development": "cypress open --env fileConfig=development",
-    "cy:stage": "cypress open --env fileConfig=stage",
-    "cy:production": "cypress open --env fileConfig=production",
-    "specTest": "npm run test -- --spec \"cypress/integration/page/checkoutPage/*\" --no-exit"
+    "test": "node_modules\\.bin\\cypress run --env ENV_NAME=production",
+    "cy:development": "cypress open --env ENV_NAME=development",
+    "cy:stage": "cypress open --env ENV_NAME=stage",
+    "cy:production": "cypress open --env ENV_NAME=production",
+    "specTest": "npm run test --spec \"cypress/integration/page/checkoutPage/*\" --no-exit"
   },
   "author": "TrinhNT",
   "license": "ISC",
