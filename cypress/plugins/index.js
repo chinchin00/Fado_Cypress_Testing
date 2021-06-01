@@ -22,7 +22,7 @@
  function getConfigurationByFile(file) {
    const pathToConfigFile = path.resolve(
      '..',
-     'Fado_Cypress_Testing/cypress/config-files',
+     'Fado_Cypress_Testing_Dev/cypress/config-files',
      `${file}.json`
    );
  
