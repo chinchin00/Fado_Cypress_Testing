@@ -16,27 +16,28 @@
  * @type {Cypress.PluginConfig}
  */
 
- const fs = require('fs-extra');
- const path = require('path');
- 
- function getConfigurationByFile(file) {
-   const pathToConfigFile = path.resolve(
-     '..',
-     'Fado_Cypress_Testing/cypress/config-files',
-     `${file}.json`
-   );
- 
-   return fs.readJson(pathToConfigFile);
- }
+const fs = require("fs-extra");
+const path = require("path");
 
- module.exports = (on, config) => {
-     // `on` is used to hook into various events Cypress emits
-     // `config` is the resolved Cypress config
-     on('task', {
-         failed: require('cypress-failed-log/src/failed')(),
-     })
+function getConfigurationByEnvName(envName) {
+  const pathToConfigFile = path.resolve(
+    "cypress/config-files",
+    `${envName}.json`
+  );
 
-     const file = config.env.fileConfig || 'production';
+  console.log(pathToConfigFile);
 
-     return getConfigurationByFile(file);
- }
+  return fs.readJson(pathToConfigFile);
+}
+
+module.exports = (on, config) => {
+  // `on` is used to hook into various events Cypress emits
+  // `config` is the resolved Cypress config
+  on("task", {
+    failed: require("cypress-failed-log/src/failed")(),
+  });
+
+  const envName = config.env.fileConfig || "production";
+
+  return getConfigurationByEnvName(envName);
+};
