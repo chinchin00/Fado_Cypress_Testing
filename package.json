@@ -15,6 +15,7 @@
   "author": "TrinhNT",
   "license": "ISC",
   "devDependencies": {
+    "cypress": "7.4.0",
     "path": "0.12.7",
     "fs-extra": "10.0.0",
     "cypress-failed-log": "2.9.1"
