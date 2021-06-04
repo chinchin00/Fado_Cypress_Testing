@@ -13,7 +13,7 @@ describe('SEARCH PRODUCT IN STORE', () => {
         
         search.getTabStore().should('have.class', 'is-active').then(() => {
             cy.get("body").then(($body) => {
-                if ($body.find(".product-card__img-field-inner").length <= 0) {
+                if (search.getProductList().length <= 0) {
                     search.getMessageBlank().contains('Không tìm thấy sản phẩm nào phù hợp cho từ khóa')
                 }
                 else {
@@ -95,54 +95,54 @@ describe('SEARCH PRODUCT IN STORE', () => {
         })
     })
 
-    it('Check detail products', function () {
-        const search = new SearchPage()
-        const home = new HomePage()
+    // it('Check detail products', function () {
+    //     const search = new SearchPage()
+    //     const home = new HomePage()
 
-        home.searchInStore(keyword)
+    //     home.searchInStore(keyword)
 
-        checkSearchResult()
+    //     checkSearchResult()
 
-        const productNames = []
-        const productCountries = []
+    //     const productNames = []
+    //     const productCountries = []
 
-        search.getProductList().each(($el, index, $list) => {
+    //     search.getProductList().each(($el, index, $list) => {
 
-            search.getCardCountry().eq(index).then(($country) => {
-                productCountries.push($country.text().trim())
-            })
+    //         search.getCardCountry().eq(index).then(($country) => {
+    //             productCountries.push($country.text().trim())
+    //         })
 
-            search.getCardTitle().eq(index).then(($title) => {
-                productNames.push($title.text().trim())
-            })
+    //         search.getCardTitle().eq(index).then(($title) => {
+    //             productNames.push($title.text().trim())
+    //         })
 
-            search.getCardTitle().eq(index).click({ force: true })
-            cy.closePopup()
+    //         search.getCardTitle().eq(index).click({ force: true })
+    //         cy.closePopup()
 
-            search.getProductName().then(($name) => {
-                const name = $name.text().trim()
-                expect(name).to.equal(productNames[index])
-            })
+    //         search.getProductName().then(($name) => {
+    //             const name = $name.text().trim()
+    //             expect(name).to.equal(productNames[index])
+    //         })
 
-            home.getBody().then(($body) => {
-                if ($body.find(stockTitle).length > 0) {
-                    cy.get(stockTitle).contains('Hết hàng')
+    //         home.getBody().then(($body) => {
+    //             if ($body.find(stockTitle).length > 0) {
+    //                 cy.get(stockTitle).contains('Hết hàng')
 
-                } else {
-                    expect(search.getPriceDetail()).to.exist
-                    expect(search.getBuyNowDetail(), 'Button Buy Now').to.exist
-                    expect(search.getAddToCartDetail(), 'Add this product to cart').to.exist
-                }
-            })
+    //             } else {
+    //                 expect(search.getPriceDetail()).to.exist
+    //                 expect(search.getBuyNowDetail(), 'Button Buy Now').to.exist
+    //                 expect(search.getAddToCartDetail(), 'Add this product to cart').to.exist
+    //             }
+    //         })
 
-            search.getCountryProduct().then($country =>{
-                const country = $country.text().trim()
-                expect(country, 'Country').contain(productCountries[index])
-            })
+    //         search.getCountryProduct().then($country =>{
+    //             const country = $country.text().trim()
+    //             expect(country, 'Country').contain(productCountries[index])
+    //         })
 
-            cy.go('back')
-        })
+    //         cy.go('back')
+    //     })
 
-    })
+    // })
 
 })
