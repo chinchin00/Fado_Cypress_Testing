@@ -1,5 +1,5 @@
 /// <reference types="Cypress" />
-import AddToCard from '../../pageObjects/addToCard'
+import CartPage from '../../pageObjects/cartPage'
 import CheckOut from '../../pageObjects/checkOut'
 import HomePage from '../../pageObjects/homePage'
 import LoginPage from '../../pageObjects/loginPage'
@@ -10,13 +10,13 @@ describe('CHECK OUT BY INLAND ATM CARD', () => {
     const checkOutByATMCard = ($bank) => {
         const login = new LoginPage()
         const checkOut = new CheckOut()
-        const addToCard = new AddToCard()
+        const cartPage = new CartPage()
         const home = new HomePage()
         //login
         cy.get('.login-btn').click()
         cy.wait(1000)
         cy.url().should('include', 'dang-nhap')
-        login.fillEmail('trinh1@yopmail.com')
+        login.fillEmail('trinh-test-03@gmail.com')
         login.fillPass('123456789')
 
         login.submit()
@@ -25,7 +25,7 @@ describe('CHECK OUT BY INLAND ATM CARD', () => {
 
         //get quantity product in card
         var itemQuantity
-        addToCard.getCardQuantity().then(($el) => {
+        cartPage.getCardQuantity().then(($el) => {
             itemQuantity = Number($el.text())
         })
 
@@ -34,17 +34,17 @@ describe('CHECK OUT BY INLAND ATM CARD', () => {
 
         //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
         let title
-        addToCard.getPricedProduct().then(($el) => {
-            title = addToCard.findCardTitle($el);
+        home.elements.pricedProduct().then(($el) => {
+            title = home.elements.findCartTitle()($el);
 
-            addToCard.addToCard($el)
+            home.addProductToCart($el)
             cy.wait(3000)
 
             //thêm một sản phẩm thành công vào giỏ hàng
-            addToCard.getCardQuantity().should('have.text', itemQuantity + 1)
+            cartPage.getCardQuantity().should('have.text', itemQuantity + 1)
 
             //redirect tới trang giỏ hàng
-            addToCard.goToCardPage()
+            home.goToCartPage()
 
             cy.url().should('include', '/gio-hang-cua-ban')
 
@@ -52,13 +52,13 @@ describe('CHECK OUT BY INLAND ATM CARD', () => {
 
         //check tên sản phẩm
         let productName = []
-        addToCard.getProductName().each(($el) => {
+        cartPage.elements.productName().each(($el) => {
             productName.push($el.text().trim())
             expect(productName).to.include(title)
         })
 
         //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
+        home.goToCartPage()
         cy.url().should('include', '/gio-hang-cua-ban')
 
         //get địa chỉ trong sổ địa chỉ
@@ -83,21 +83,21 @@ describe('CHECK OUT BY INLAND ATM CARD', () => {
             }
         })
         //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
+        home.goToCartPage()
         cy.url().should('include', '/gio-hang-cua-ban')
 
         //tổng giá trị sản phẩm trong giỏ hàng
         let sumPrice = 0
-        addToCard.getTotalPriceAProduct().each(($el, index, $list) => {
+        cartPage.elements.totalPriceAProduct().each(($el, index, $list) => {
             sumPrice = checkOut.convertToNumber($el) + sumPrice
         })
         //check tổng giá trị sản phẩm trong giỏ hàng
-        addToCard.getTotalValueOrder().then(($price) => {
+        cartPage.elements.totalValueOrder().then(($price) => {
             let resCPrice = checkOut.convertToNumber($price)
             expect(resCPrice, 'Tổng tiền sản phẩm').to.equal(sumPrice)
         })
         // Chuyển tới trang thanh toán từ giỏ hàng
-        addToCard.order()
+        cartPage.order()
         //check giá sản phẩm
         checkOut.getTotalProductPrice().then(($dPrice) => {
             let resDPrice = checkOut.convertToNumber($dPrice)
@@ -138,7 +138,7 @@ describe('CHECK OUT BY INLAND ATM CARD', () => {
         checkOut.selectBank($bank)
 
         //Thanh toán đơn hàng
-        checkOut.getBtnOrder().should('have.class', 'is-active')
+        checkOut.elements.btnOrder().should('have.class', 'is-active')
 
         //đồng ý điều khoản
         checkOut.acceptRule()

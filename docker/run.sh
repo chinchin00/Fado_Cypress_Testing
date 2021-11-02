@@ -21,4 +21,4 @@ docker run \
     --memory-reservation=3584m \
     --oom-kill-disable \
     \
-    cypress/included:7.4.0
+    cypress/included:7.5.0

@@ -1,8 +1,11 @@
 /// <reference types="Cypress" />
 
 import HomePage from '../../pageObjects/homePage'
+import { generateRandomString, generateRandomStringPhone } from '../../../util/stringUtil';
 
 describe('LOGIN', () => {
+    const email = 'trinhnt@miczone.asia'
+    const password = '123456'
 
     beforeEach(function () {
         cy.fixture('userInfo').then((data) => {
@@ -10,7 +13,6 @@ describe('LOGIN', () => {
         })
         cy.visitLoginPage()
     })
-    //chưa viết test cho phần login/register qua fb hoặc gg
 
     it('Verify form Login', function () {
         const home = new HomePage()
@@ -37,14 +39,13 @@ describe('LOGIN', () => {
 
         const login = home.goToSignIn()
 
-        login.fillEmail(this.data.email)
-        login.fillPass(this.data.password)
+        login.fillEmail(email)
+        login.fillPass(password)
 
         login.submit()
-        cy.wait(10000)
         cy.closePopup()
 
-        home.getUserName().children().should('have.class', 'user-name-col')
+        home.elements.userName().children().should('have.class', 'user-name-col')
             .and('have.class', 'arrow-icon')
 
     })
@@ -54,14 +55,13 @@ describe('LOGIN', () => {
 
         const login = home.goToSignIn()
 
-        login.fillEmail(this.data.emailFirstSpace)
-        login.fillEmail(this.data.password)
+        login.fillEmail('  ' + email)
+        login.fillPass(password)
 
         login.submit()
-        cy.wait(10000)
         cy.closePopup()
 
-        home.getUserName().children().should('have.class', 'user-name-col')
+        home.elements.userName().children().should('have.class', 'user-name-col')
             .and('have.class', 'arrow-icon')
 
     })
@@ -70,14 +70,13 @@ describe('LOGIN', () => {
         const home = new HomePage()
 
         const login = home.goToSignIn()
-        login.fillEmail(this.data.emailLastSpace)
-        login.fillEmail(this.data.password)
+        login.fillEmail(email + '  ')
+        login.fillPass(password)
 
         login.submit()
-        cy.wait(10000)
         cy.closePopup()
 
-        home.getUserName().children().should('have.class', 'user-name-col')
+        home.elements.userName().children().should('have.class', 'user-name-col')
             .and('have.class', 'arrow-icon')
 
     })
@@ -87,8 +86,8 @@ describe('LOGIN', () => {
 
         const login = home.goToSignIn()
 
-        login.fillEmail(this.data.email)
-        login.fillEmail(this.data.passwordInvalid)
+        login.fillEmail(email)
+        login.fillPass('123454')
 
         login.submit()
 
@@ -102,8 +101,8 @@ describe('LOGIN', () => {
 
         const login = home.goToSignIn()
 
-        login.fillEmail(this.data.emailInvalid)
-        login.fillEmail(this.data.password)
+        login.fillEmail(generateRandomString(7) + '@tesst.cypress')
+        login.fillPass(password)
 
         login.submit()
 
@@ -117,7 +116,7 @@ describe('LOGIN', () => {
 
         const login = home.goToSignIn()
 
-        login.fillEmail(this.data.emailInvalid)
+        login.fillEmail(email)
 
         login.submit()
 
@@ -131,7 +130,7 @@ describe('LOGIN', () => {
 
         const login = home.goToSignIn()
 
-        login.fillEmail(this.data.password)
+        login.fillPass(password)
 
         login.submit()
 
@@ -166,7 +165,7 @@ describe('LOGIN', () => {
 
         login.getRequestPassModal().should('have.class', 'show')
 
-        login.fillEmailForgot(this.data.email)
+        login.fillEmailForgot(email)
         login.fillCapchaForgot('hx68gs#32op')
 
         login.submitReset()
@@ -206,11 +205,10 @@ describe('LOGIN', () => {
 
         login.getRequestPassModal().should('have.class', 'show')
 
-        login.fillEmailForgot(this.data.email)
+        login.fillEmailForgot(email)
         login.fillCapchaForgot('123')
 
-        login.submitReset().wait(2000)
-
+        login.submitReset()
         login.getFinishModal().should('not.have.class', 'show')
     })
 

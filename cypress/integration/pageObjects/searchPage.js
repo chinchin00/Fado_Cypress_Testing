@@ -82,7 +82,7 @@ class SearchPage{
         return cy.get('.mz-rating__label-field > :nth-child(3)');
     }
 
-    getProductName(){
+    productName(){
         return cy.get('.product-name');
     }
 

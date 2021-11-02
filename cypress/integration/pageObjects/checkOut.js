@@ -8,20 +8,17 @@ class CheckOut {
         return number;
     }
 
-    getBtnLogin() {
-        return cy.get('.is-border-right > .suggest-login-segment > .control-col > .mz-btn');
-    }
-
-    getLabelEnterInfo() {
-        return cy.get('.control-col > .mz-btn > .mz-btn__label-col');
-    }
-
-    getBtnOrder() {
-        return cy.get('.submit-order-info-btn');
+    elements = {
+        btnLogin: () => cy.get('.is-border-right > .suggest-login-segment > .control-col > .mz-btn'), //login acc to payment
+        labelEnterInfo: () => cy.get('.control-col > .mz-btn > .mz-btn__label-col'), // btn fill info orderer
+        btnOrder: () => cy.get('.submit-order-info-btn'),
+        fieldCustomerPhone: () => cy.get('[name="customer_phone"]'),
+        fieldCustomerEmail: () => cy.get(':nth-child(3) > .mz-form-group > .mz-form-group__control-col > .mz-form-control > .mz-form-control__input'),
+        fieldCustomerName: () => cy.get('.mz-form > :nth-child(1) > .mz-form-group > .mz-form-group__control-col > .mz-form-control > .mz-form-control__input'),
     }
 
     fillCustomerPhone(value) {
-        const field = cy.get('[name="customer_phone"]');
+        const field = this.elements.fieldCustomerPhone();
         field.clear();
         // field.type(value).should('have.value', value);
         field.should("be.visible")
@@ -30,7 +27,7 @@ class CheckOut {
     }
 
     fillCustomerEmail(value) {
-        const field = cy.get(':nth-child(3) > .mz-form-group > .mz-form-group__control-col > .mz-form-control > .mz-form-control__input');
+        const field = this.elements.fieldCustomerEmail();
         field.clear();
         field.should("be.visible")
             .type(value,{ force: true }).should('have.value', value);
@@ -38,7 +35,7 @@ class CheckOut {
     }
 
     fillCustomerName(value) {
-        const field = cy.get('.mz-form > :nth-child(1) > .mz-form-group > .mz-form-group__control-col > .mz-form-control > .mz-form-control__input');
+        const field = this.elements.fieldCustomerName();
         field.clear();
         field.should("be.visible")
             .type(value,  { force: true }).should('have.value', value);

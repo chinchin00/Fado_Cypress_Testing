@@ -1,376 +1,350 @@
 /// <reference types="Cypress" />
 
-import AddToCard from '../../pageObjects/addToCard'
+import CartPage from '../../pageObjects/cartPage'
 import CheckOut from '../../pageObjects/checkOut'
 import HomePage from '../../pageObjects/homePage'
 import LoginPage from '../../pageObjects/loginPage'
-import CancelOrder from "../../pageObjects/cancelOrder";
 
 describe('Checkout', () => {
 
-    let keyword = 'thuốc';
+    const checkOut = new CheckOut()
+    const home = new HomePage()
+    const cartPage = new CartPage()
+    let keyword = "watch"
 
-    const cancelOrder = () =>{
-        const checkOut = new CheckOut()
+    const cancelOrder = () => {
+        const checkOut = new CheckOut();
 
-         //HỦY ĐƠN HÀNG
-         checkOut.checkOrder()
-         cy.url().should('include', 'chi-tiet-don-hang')
- 
-         checkOut.clickBtnCancelOrder()
- 
-         // show modal hủy đơn hàng khi click btn 'Hủy đơn hàng'
-         checkOut.getCancelOrderModal().should('have.class', 'show')
+        //HỦY ĐƠN HÀNG
+        checkOut.checkOrder(); // kiem tra don hang
+        cy.url().should('include', 'chi-tiet-don-hang');
 
-         //select lý do hủy đơn hàng
-         checkOut.selectReasonCancel()
- 
-         //xác nhận hủy đơn hàng
-         checkOut.cancelOrder()
- 
-         //xacs nhận đơn hàng đã được hủy
-         checkOut.getOrderStatusText().should('contain', 'Đã hủy')
+        checkOut.clickBtnCancelOrder();
+
+        // show modal hủy đơn hàng khi click btn 'Hủy đơn hàng'
+        checkOut.getCancelOrderModal().should('have.class', 'show');
+
+        //select lý do hủy đơn hàng
+        checkOut.selectReasonCancel();
+
+        //xác nhận hủy đơn hàng
+        checkOut.cancelOrder();
+
+        //xacs nhận đơn hàng đã được hủy
+        checkOut.getOrderStatusText().should('contain', 'Đã hủy');
     }
 
-    beforeEach(function () {
-        cy.fixture('userInfo').then((data) => {
-            this.data = data
-        })
+    //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
+    const addToCart = () => {
+        home.elements.pricedProduct().then(($el) => {
+            const title = home.elements.findCartTitle($el);
 
-        cy.visitHomePage()
-
-        cy.closePopup()
-
-    })
-
-    it('Thêm sản phẩm vào giỏ hàng và thanh toán', function () {
-        let checkOut = new CheckOut()
-        let home = new HomePage()
-        let addToCard = new AddToCard()
-
-        // search in store
-       home.searchInStore(keyword)
-
-       //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
-        addToCard.getPricedProduct().then(($el) => {
-           const title = addToCard.findCardTitle($el);
-
-           addToCard.addToCard($el)
-           cy.wait(3000)
-
-           //thêm một sản phẩm thành công vào giỏ hàng
-           addToCard.getCardQuantity().should('have.text', 1)
-
-           //redirect tới trang giỏ hàng
-           addToCard.goToCardPage()
-
-           cy.url().should('include', '/gio-hang-cua-ban')
-
-           //check tên sản phẩm
-           addToCard.getProductName().then(($name) => {
-               const name = $name.text().trim();
-               expect(name).to.equal(title)
-           })
-       })
-
-        //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
-        cy.url().should('include', '/gio-hang-cua-ban')
-
-        //check out 
-        addToCard.getTotalValueOrder().then(($price) => {
-            let resPrice = checkOut.convertToNumber($price)
-
-            // Đặt hàng
-            addToCard.order()
+            home.addProductToCart($el)
             cy.wait(2000)
-            cy.url().should('include', 'xac-nhan-thong-tin-dat-hang')
 
-            //check giá sản phẩm
-            checkOut.getTotalProductPrice().then(($priceSt) => {
-                let resPriceSt = checkOut.convertToNumber($priceSt)
-                expect(resPriceSt).to.equal(resPrice)
+            //thêm một sản phẩm thành công vào giỏ hàng
+            home.elements.cartQuantity().should('have.text', 1)
+
+            //redirect tới trang giỏ hàng
+            home.goToCartPage()
+
+            cy.url().should('include', '/gio-hang-cua-ban')
+
+            //check tên sản phẩm
+            cartPage.elements.productName().then(($name) => {
+                const name = $name.text().trim();
+                expect(name).to.equal(title)
             })
         })
+    }
 
-        //check thông tin đặt hàng
-        checkOut.getBtnLogin().then(($lr) => {
-            let lr = $lr.text().trim()
-            expect(lr).to.equal('Đăng nhập / Đăng ký')
-        })
-        checkOut.getLabelEnterInfo().then(($info) => {
-            let info = $info.text().trim()
-            expect(info).to.equal('Nhập thông tin đặt hàng')
-        })
+    // GUEST
+    context('GUEST', function () {
+        // Create info orderer
+        const createInfoOrderer = () => {
+            checkOut.elements.labelEnterInfo().click()
 
-        checkOut.getBtnOrder().should('not.have.class', 'is-active')
+            checkOut.fillCustomerName('test')
+            checkOut.fillCustomerPhone('0353260584')
+            checkOut.fillCustomerEmail('trinh-test-03@gmail.com')
 
-    })
+            checkOut.selectCity()
 
-    it('Không nhập họ tên người đặt đơn hàng', function () {
-        let checkOut = new CheckOut()
-        let home = new HomePage()
-        let addToCard = new AddToCard()
+            checkOut.selectDistrict()
 
-        // search in store
-        home.searchInStore(keyword)
+            checkOut.selectWard()
 
-       //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
-        addToCard.getPricedProduct().then(($el) => {
-           const title = addToCard.findCardTitle($el);
+            checkOut.fillDetailAddress('abcd')
 
-           addToCard.addToCard($el)
-           cy.wait(3000)
+            checkOut.createInfo()
 
-           //thêm một sản phẩm thành công vào giỏ hàng
-           addToCard.getCardQuantity().should('have.text', 1)
+            cy.wait(1000)
+        }
 
-           //redirect tới trang giỏ hàng
-           addToCard.goToCardPage()
+        // clear form enter info orderer
+        const clearFormInfo = () =>{
+            checkOut.elements.fieldCustomerName().clear();
+            checkOut.elements.fieldCustomerPhone().clear();
+            checkOut.elements.fieldCustomerEmail().clear();
+            cy.get('#vs1__combobox > .vs__actions > .vs__clear > .deselect-btn').click();
+            cy.get('#vs2__combobox > .vs__actions > .vs__clear > .deselect-btn').click();
+            cy.get('#vs3__combobox > .vs__actions > .vs__clear > .deselect-btn').click();
+            checkOut.elements.fieldCustomerDetailAddress().clear();
+        }
 
-           cy.url().should('include', '/gio-hang-cua-ban')
-
-           //check tên sản phẩm
-           addToCard.getProductName().then(($name) => {
-               const name = $name.text().trim();
-               expect(name).to.equal(title)
-           })
-       })
-
-        //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
-        cy.url().should('include', '/gio-hang-cua-ban')
-
-        addToCard.order()
-
-        //check thông tin đặt hàng
-        checkOut.getBtnLogin().then(($lr) => {
-            let lr = $lr.text().trim()
-            expect(lr).to.equal('Đăng nhập / Đăng ký')
-        })
-        checkOut.getLabelEnterInfo().then(($info) => {
-            let info = $info.text().trim()
-            expect(info).to.equal('Nhập thông tin đặt hàng')
+        beforeEach(function () {
+            cy.fixture('userInfo').then((data) => {
+                this.data = data
+            })
+            cy.visitHomePage()
+            cy.closePopup()
         })
 
-        checkOut.getBtnOrder().should('not.have.class', 'is-active')
+        it('[GUEST] Check out success', function () {
 
-        // cy.get('.user-address-book-update-info-modal').should('have.attr', 'aria-hidden', 'true')
-        //tạo địa chỉ
-        checkOut.getLabelEnterInfo().click({force: true})
+            let sumPrice = 0 // tổng tiền items được chọn để đặt hàng trong trang giỏ hàng 
 
-        checkOut.fillCustomerPhone('0353260584')
-        checkOut.fillCustomerEmail('test1@yopmail.com')
+            addToCart();
 
-        checkOut.selectCity()
+            cartPage.elements.totalPriceAProduct().each(($el, index, $list) => {
+                sumPrice = checkOut.convertToNumber($el) + sumPrice
+            })
 
-        checkOut.selectDistrict()
+            cartPage.elements.totalValueOrder().then(($price) => {
+                let resCPrice = checkOut.convertToNumber($price)
+                expect(resCPrice, 'Tổng tiền sản phẩm trong cart page: ').to.equal(sumPrice)
+            })
 
-        checkOut.selectWard()
+            // Đặt hàng
+            cartPage.order();
+            cy.wait(1000);
+            cy.url().should('include', 'xac-nhan-thong-tin-dat-hang');
 
-        checkOut.fillDetailAddress('abcd')
+            createInfoOrderer();
 
-        checkOut.createInfo()
+            checkOut.getTotalProductPrice().then(($dPrice) => {
+                let resDPrice = checkOut.convertToNumber($dPrice)
+                expect(resDPrice, 'Tổng tiền sản phẩm: ').to.equal(sumPrice)
+            })
 
-        checkOut.getMessErrorName().should('have.text', 'Họ tên đầy đủ là bắt buộc')
+            let resSumPrice
+            checkOut.getTotalOrderPrice().then(($sumPrice) => {
+                resSumPrice = checkOut.convertToNumber($sumPrice)
+            })
+            checkOut.elements.btnOrder().should('have.class', 'is-active')
+            checkOut.elements.btnOrder().click()
 
-    })
+            checkOut.acceptRule()
 
-    it('Không nhập số điện thoại người đặt đơn hàng', function () {
-        let checkOut = new CheckOut()
-        let home = new HomePage()
-        let addToCard = new AddToCard()
+            checkOut.getMessOrderSuccess().then(($dh) => {
+                let dh = $dh.text().trim()
+                expect(dh).to.equal('Quý khách đã tạo đơn hàng thành công')
+            })
+            checkOut.getPriceAfterOrder().then(($price) => {
+                let resPrice = checkOut.convertToNumber($price)
+                if (resPrice === resSumPrice) {
+                    expect(resPrice, 'Tổng tiền đơn hàng').to.equal(resSumPrice)
+                } else {
+                    cy.log('Tổng tiền bị chênh lệch do tỷ giá')
+                }
+            })
 
-        // search in store
-        home.searchInStore(keyword)
-
-       //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
-        addToCard.getPricedProduct().then(($el) => {
-           const title = addToCard.findCardTitle($el);
-
-           addToCard.addToCard($el)
-           cy.wait(3000)
-
-           //thêm một sản phẩm thành công vào giỏ hàng
-           addToCard.getCardQuantity().should('have.text', 1)
-
-           //redirect tới trang giỏ hàng
-           addToCard.goToCardPage()
-
-           cy.url().should('include', '/gio-hang-cua-ban')
-
-           //check tên sản phẩm
-           addToCard.getProductName().then(($name) => {
-               const name = $name.text().trim();
-               expect(name).to.equal(title)
-           })
-       })
-
-        //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
-        cy.url().should('include', '/gio-hang-cua-ban')
-
-        addToCard.order()
-
-        //check thông tin đặt hàng
-        checkOut.getBtnLogin().then(($lr) => {
-            let lr = $lr.text().trim()
-            expect(lr).to.equal('Đăng nhập / Đăng ký')
-        })
-        checkOut.getLabelEnterInfo().then(($info) => {
-            let info = $info.text().trim()
-            expect(info).to.equal('Nhập thông tin đặt hàng')
+            checkOut.checkOrder()
+            cy.url().should('include', '/kiem-tra-don-hang')
         })
 
-        checkOut.getBtnOrder().should('not.have.class', 'is-active')
+        it('[GUEST] check form nhập thông tin người đặt hàng', function() {
+            let sumPrice = 0 // tổng tiền items được chọn để đặt hàng trong trang giỏ hàng 
 
-        // cy.get('.user-address-book-update-info-modal').should('have.attr', 'aria-hidden', 'true')
-        //tạo địa chỉ
-        checkOut.getLabelEnterInfo().click()
+            addToCart();
 
-        checkOut.fillCustomerName('QC_test')
+            cartPage.elements.totalPriceAProduct().each(($el, index, $list) => {
+                sumPrice = checkOut.convertToNumber($el) + sumPrice;
+            })
 
-        checkOut.fillCustomerEmail('test1@yopmail.com')
+            cartPage.elements.totalValueOrder().then(($price) => {
+                let resCPrice = checkOut.convertToNumber($price);
+                expect(resCPrice, 'Tổng tiền sản phẩm trong cart page: ').to.equal(sumPrice);
+            })
 
-        checkOut.selectCity()
+            // Đặt hàng
+            cartPage.order();
+            cy.wait(1000);
+            cy.url().should('include', 'xac-nhan-thong-tin-dat-hang');
 
-        checkOut.selectDistrict()
+            checkOut.elements.btnOrder().should('not.have.class', 'is-active');
+            
+            checkOut.elements.labelEnterInfo().click({ force: true }); // btn [Nhap thong tin dat hang]
 
-        checkOut.selectWard()
+            //leave all mandatory field blank
+            checkOut.createInfo();
+            checkOut.elements.btnOrder().should('not.have.class', 'is-active');
+            
 
-        checkOut.fillDetailAddress('abcd')
+            // leave [customerName] field blank
+            checkOut.fillCustomerPhone('0353260584');
+            checkOut.fillCustomerEmail('trinh-test-03@gmail.com');
+    
+            checkOut.selectCity();
+    
+            checkOut.selectDistrict();
+    
+            checkOut.selectWard();
+    
+            checkOut.fillDetailAddress('abcd');
+    
+            checkOut.createInfo();
+    
+            checkOut.getMessErrorName().should('have.text', 'Họ tên đầy đủ là bắt buộc');
 
-        checkOut.createInfo()
+            // leave [customerPhone] field blank
+            clearFormInfo();
+            checkOut.fillCustomerName('qc_test');
+            checkOut.fillCustomerEmail('trinh-test-03@gmail.com');
+    
+            checkOut.selectCity();
+    
+            checkOut.selectDistrict();
+    
+            checkOut.selectWard();
+    
+            checkOut.fillDetailAddress('abcd');
+    
+            checkOut.createInfo();
+    
+            checkOut.getMessErrorPhone().should('have.text', 'Điện thoại là bắt buộc');
 
-        checkOut.getMessErrorPhone().should('have.text', 'Điện thoại là bắt buộc')
+            // leave [customerEmail] field blank
+            clearFormInfo();
+            checkOut.fillCustomerName('qc_test');
+            checkOut.fillCustomerPhone('0353260584');
+    
+            checkOut.selectCity();
+    
+            checkOut.selectDistrict();
+    
+            checkOut.selectWard();
+    
+            checkOut.fillDetailAddress('abcd');
+    
+            checkOut.createInfo();
+    
+            checkOut.getMessErrorPhone().should('have.text', 'Email là bắt buộc');
 
-    })
+            // leave [customerCity] field blank
+            clearFormInfo();
+            checkOut.fillCustomerName('qc_test');
+            checkOut.fillCustomerPhone('0353260584');
+            checkOut.fillCustomerEmail('trinh-test-03@gmail.com');
+            checkOut.fillDetailAddress('abcd');
+            checkOut.getComboboxDistrict().then(($quan) => {
+                expect($quan).to.be.disabled;
+            });
+            checkOut.getComboboxWard().then(($xa) => {
+                expect($xa).to.be.disabled;
+            });
+            checkOut.createInfo();
+    
+            checkOut.getMessErrorAddress().then(($address) => {
+                let address = $address.text().trim();
+                expect(address).to.equal('Vui lòng chọn đầy đủ địa điểm');
+            });
+            
+            // leave [customerDistrict] field blank
+            clearFormInfo();
+            checkOut.fillCustomerName('qc_test');
+            checkOut.fillCustomerPhone('0353260584');
+            checkOut.fillCustomerEmail('trinh-test-03@gmail.com');
+            checkOut.fillDetailAddress('abcd');
+            checkOut
+            checkOut.getComboboxDistrict().then(($quan) => {
+                expect($quan).to.be.disabled;
+            });
+            checkOut.getComboboxWard().then(($xa) => {
+                expect($xa).to.be.disabled;
+            });
+            checkOut.createInfo();
+    
+            checkOut.getMessErrorAddress().then(($address) => {
+                let address = $address.text().trim();
+                expect(address).to.equal('Vui lòng chọn đầy đủ địa điểm');
+            });
 
-    it('Không nhập email người đặt đơn hàng', function () {
-        let checkOut = new CheckOut()
-        let home = new HomePage()
-        let addToCard = new AddToCard()
+            // leave [customerWard] field blank
+            clearFormInfo();
+            checkOut.fillCustomerName('qc_test');
+            checkOut.fillCustomerPhone('0353260584');
+            checkOut.fillCustomerEmail('trinh-test-03@gmail.com');
+            checkOut.fillDetailAddress('abcd');
+            checkOut.selectCity();
 
-        // search in store
-        home.searchInStore(keyword)
-
-       //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
-        addToCard.getPricedProduct().then(($el) => {
-           const title = addToCard.findCardTitle($el);
-
-           addToCard.addToCard($el)
-           cy.wait(3000)
-
-           //thêm một sản phẩm thành công vào giỏ hàng
-           addToCard.getCardQuantity().should('have.text', 1)
-
-           //redirect tới trang giỏ hàng
-           addToCard.goToCardPage()
-
-           cy.url().should('include', '/gio-hang-cua-ban')
-
-           //check tên sản phẩm
-           addToCard.getProductName().then(($name) => {
-               const name = $name.text().trim();
-               expect(name).to.equal(title)
-           })
-       })
-
-        //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
-        cy.url().should('include', '/gio-hang-cua-ban')
-
-        addToCard.order()
-
-        //check thông tin đặt hàng
-        checkOut.getBtnLogin().then(($lr) => {
-            let lr = $lr.text().trim()
-            expect(lr).to.equal('Đăng nhập / Đăng ký')
+            checkOut.getComboboxDistrict().then(($quan) => {
+                expect($quan).to.be.disabled;
+            });
+            checkOut.getComboboxWard().then(($xa) => {
+                expect($xa).to.be.disabled;
+            });
+            checkOut.createInfo();
+    
+            checkOut.getMessErrorAddress().then(($address) => {
+                let address = $address.text().trim();
+                expect(address).to.equal('Vui lòng chọn đầy đủ địa điểm');
+            });
         })
-        checkOut.getLabelEnterInfo().then(($info) => {
-            let info = $info.text().trim()
-            expect(info).to.equal('Nhập thông tin đặt hàng')
-        })
-
-        checkOut.getBtnOrder().should('not.have.class', 'is-active')
-
-        // cy.get('.user-address-book-update-info-modal').should('have.attr', 'aria-hidden', 'true')
-        //tạo địa chỉ
-        checkOut.getLabelEnterInfo().click()
-
-        checkOut.fillCustomerName('QC_test')
-
-        checkOut.fillCustomerPhone('0353260584')
-
-        checkOut.selectCity()
-
-        checkOut.selectDistrict()
-
-        checkOut.selectWard()
-
-        checkOut.fillDetailAddress('abcd')
-
-        checkOut.createInfo()
-
-        checkOut.getMessErrorEmail().should('have.text', 'Email là bắt buộc')
-
     })
 
     it('Không nhập thông tin tỉnh/thành phố trong trường Địa Điểm', function () {
         let checkOut = new CheckOut()
         let home = new HomePage()
-        let addToCard = new AddToCard()
+        let cartPage = new CartPage()
 
         // search in store
         home.searchInStore(keyword)
 
-       //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
-        addToCard.getPricedProduct().then(($el) => {
-           const title = addToCard.findCardTitle($el);
+        //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
+        home.elements.pricedProduct().then(($el) => {
+            const title = home.elements.findCartTitle()($el);
 
-           addToCard.addToCard($el)
-           cy.wait(3000)
+            home.addProductToCart($el)
+            cy.wait(3000)
 
-           //thêm một sản phẩm thành công vào giỏ hàng
-           addToCard.getCardQuantity().should('have.text', 1)
+            //thêm một sản phẩm thành công vào giỏ hàng
+            cartPage.getCardQuantity().should('have.text', 1)
 
-           //redirect tới trang giỏ hàng
-           addToCard.goToCardPage()
+            //redirect tới trang giỏ hàng
+            home.goToCartPage()
 
-           cy.url().should('include', '/gio-hang-cua-ban')
+            cy.url().should('include', '/gio-hang-cua-ban')
 
-           //check tên sản phẩm
-           addToCard.getProductName().then(($name) => {
-               const name = $name.text().trim();
-               expect(name).to.equal(title)
-           })
-       })
+            //check tên sản phẩm
+            cartPage.elements.productName().then(($name) => {
+                const name = $name.text().trim();
+                expect(name).to.equal(title)
+            })
+        })
 
         //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
+        home.goToCartPage()
         cy.url().should('include', '/gio-hang-cua-ban')
 
-        addToCard.order()
+        cartPage.order()
 
         //check thông tin đặt hàng
-        checkOut.getBtnLogin().then(($lr) => {
+        checkOut.elements.btnLogin().then(($lr) => {
             let lr = $lr.text().trim()
             expect(lr).to.equal('Đăng nhập / Đăng ký')
         })
-        checkOut.getLabelEnterInfo().then(($info) => {
-            let info = $info.text().trim()
-            expect(info).to.equal('Nhập thông tin đặt hàng')
-        })
 
-        checkOut.getBtnOrder().should('not.have.class', 'is-active')
+
+        checkOut.elements.btnOrder().should('not.have.class', 'is-active')
 
         // cy.get('.user-address-book-update-info-modal').should('have.attr', 'aria-hidden', 'true')
         //tạo địa chỉ
-        checkOut.getLabelEnterInfo().click()
+        checkOut.elements.labelEnterInfo().click()
 
         checkOut.fillCustomerName('QC_test')
         checkOut.fillCustomerPhone('0353260584')
-        checkOut.fillCustomerEmail('test1@yopmail.com')
+        checkOut.fillCustomerEmail('trinh-test-03@gmail.com')
 
         checkOut.fillDetailAddress('abcd')
         checkOut.getComboboxDistrict().then(($quan) => {
@@ -391,58 +365,55 @@ describe('Checkout', () => {
     it('Không nhập thông tin quận trong trường Địa Điểm', function () {
         let checkOut = new CheckOut()
         let home = new HomePage()
-        let addToCard = new AddToCard()
+        let cartPage = new CartPage()
 
         // search in store
         home.searchInStore(keyword)
 
-       //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
-        addToCard.getPricedProduct().then(($el) => {
-           const title = addToCard.findCardTitle($el);
+        //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
+        home.elements.pricedProduct().then(($el) => {
+            const title = home.elements.findCartTitle()($el);
 
-           addToCard.addToCard($el)
-           cy.wait(2000)
+            home.addProductToCart($el)
+            cy.wait(2000)
 
-           //thêm một sản phẩm thành công vào giỏ hàng
-           addToCard.getCardQuantity().should('have.text', 1)
+            //thêm một sản phẩm thành công vào giỏ hàng
+            cartPage.getCardQuantity().should('have.text', 1)
 
-           //redirect tới trang giỏ hàng
-           addToCard.goToCardPage()
+            //redirect tới trang giỏ hàng
+            home.goToCartPage()
 
-           cy.url().should('include', '/gio-hang-cua-ban')
+            cy.url().should('include', '/gio-hang-cua-ban')
 
-           //check tên sản phẩm
-           addToCard.getProductName().then(($name) => {
-               const name = $name.text().trim();
-               expect(name).to.equal(title)
-           })
-       })
+            //check tên sản phẩm
+            cartPage.elements.productName().then(($name) => {
+                const name = $name.text().trim();
+                expect(name).to.equal(title)
+            })
+        })
 
         //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
+        home.goToCartPage()
         cy.url().should('include', '/gio-hang-cua-ban')
 
-        addToCard.order()
+        cartPage.order()
 
         //check thông tin đặt hàng
-        checkOut.getBtnLogin().then(($lr) => {
+        checkOut.elements.btnLogin().then(($lr) => {
             let lr = $lr.text().trim()
             expect(lr).to.equal('Đăng nhập / Đăng ký')
         })
-        checkOut.getLabelEnterInfo().then(($info) => {
-            let info = $info.text().trim()
-            expect(info).to.equal('Nhập thông tin đặt hàng')
-        })
 
-        checkOut.getBtnOrder().should('not.have.class', 'is-active')
+
+        checkOut.elements.btnOrder().should('not.have.class', 'is-active')
 
         // cy.get('.user-address-book-update-info-modal').should('have.attr', 'aria-hidden', 'true')
         //tạo địa chỉ
-        checkOut.getLabelEnterInfo().click()
+        checkOut.elements.labelEnterInfo().click()
 
         checkOut.fillCustomerName('QC_test')
         checkOut.fillCustomerPhone('0353260584')
-        checkOut.fillCustomerEmail('test1@yopmail.com')
+        checkOut.fillCustomerEmail('trinh-test-03@gmail.com')
 
         checkOut.selectCity()
 
@@ -464,58 +435,55 @@ describe('Checkout', () => {
     it('Không nhập thông tin xã/phường trong trường Địa Điểm', function () {
         let checkOut = new CheckOut()
         let home = new HomePage()
-        let addToCard = new AddToCard()
+        let cartPage = new CartPage()
 
         // search in store
         home.searchInStore(keyword)
 
-       //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
-        addToCard.getPricedProduct().then(($el) => {
-           const title = addToCard.findCardTitle($el);
+        //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
+        home.elements.pricedProduct().then(($el) => {
+            const title = home.elements.findCartTitle()($el);
 
-           addToCard.addToCard($el)
-           cy.wait(3000)
+            home.addProductToCart($el)
+            cy.wait(3000)
 
-           //thêm một sản phẩm thành công vào giỏ hàng
-           addToCard.getCardQuantity().should('have.text', 1)
+            //thêm một sản phẩm thành công vào giỏ hàng
+            cartPage.getCardQuantity().should('have.text', 1)
 
-           //redirect tới trang giỏ hàng
-           addToCard.goToCardPage()
+            //redirect tới trang giỏ hàng
+            home.goToCartPage()
 
-           cy.url().should('include', '/gio-hang-cua-ban')
+            cy.url().should('include', '/gio-hang-cua-ban')
 
-           //check tên sản phẩm
-           addToCard.getProductName().then(($name) => {
-               const name = $name.text().trim();
-               expect(name).to.equal(title)
-           })
-       })
+            //check tên sản phẩm
+            cartPage.elements.productName().then(($name) => {
+                const name = $name.text().trim();
+                expect(name).to.equal(title)
+            })
+        })
 
         //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
+        home.goToCartPage()
         cy.url().should('include', '/gio-hang-cua-ban')
 
-        addToCard.order()
+        cartPage.order()
 
         //check thông tin đặt hàng
-        checkOut.getBtnLogin().then(($lr) => {
+        checkOut.elements.btnLogin().then(($lr) => {
             let lr = $lr.text().trim()
             expect(lr).to.equal('Đăng nhập / Đăng ký')
         })
-        checkOut.getLabelEnterInfo().then(($info) => {
-            let info = $info.text().trim()
-            expect(info).to.equal('Nhập thông tin đặt hàng')
-        })
 
-        checkOut.getBtnOrder().should('not.have.class', 'is-active')
+
+        checkOut.elements.btnOrder().should('not.have.class', 'is-active')
 
         // cy.get('.user-address-book-update-info-modal').should('have.attr', 'aria-hidden', 'true')
         //tạo địa chỉ
-        checkOut.getLabelEnterInfo().click()
+        checkOut.elements.labelEnterInfo().click()
 
         checkOut.fillCustomerName('QC_test')
         checkOut.fillCustomerPhone('0353260584')
-        checkOut.fillCustomerEmail('test1@yopmail.com')
+        checkOut.fillCustomerEmail('trinh-test-03@gmail.com')
 
         checkOut.selectCity()
 
@@ -535,58 +503,55 @@ describe('Checkout', () => {
     it('Không nhập thông tin trong trường địa điểm chính xác', function () {
         let checkOut = new CheckOut()
         let home = new HomePage()
-        let addToCard = new AddToCard()
+        let cartPage = new CartPage()
 
         // search in store
         home.searchInStore(keyword)
 
-       //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
-        addToCard.getPricedProduct().then(($el) => {
-           const title = addToCard.findCardTitle($el);
+        //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
+        home.elements.pricedProduct().then(($el) => {
+            const title = home.elements.findCartTitle()($el);
 
-           addToCard.addToCard($el)
-           cy.wait(3000)
+            home.addProductToCart($el)
+            cy.wait(3000)
 
-           //thêm một sản phẩm thành công vào giỏ hàng
-           addToCard.getCardQuantity().should('have.text', 1)
+            //thêm một sản phẩm thành công vào giỏ hàng
+            cartPage.getCardQuantity().should('have.text', 1)
 
-           //redirect tới trang giỏ hàng
-           addToCard.goToCardPage()
+            //redirect tới trang giỏ hàng
+            home.goToCartPage()
 
-           cy.url().should('include', '/gio-hang-cua-ban')
+            cy.url().should('include', '/gio-hang-cua-ban')
 
-           //check tên sản phẩm
-           addToCard.getProductName().then(($name) => {
-               const name = $name.text().trim();
-               expect(name).to.equal(title)
-           })
-       })
+            //check tên sản phẩm
+            cartPage.elements.productName().then(($name) => {
+                const name = $name.text().trim();
+                expect(name).to.equal(title)
+            })
+        })
 
         //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
+        home.goToCartPage()
         cy.url().should('include', '/gio-hang-cua-ban')
 
-        addToCard.order()
+        cartPage.order()
 
         //check thông tin đặt hàng
-        checkOut.getBtnLogin().then(($lr) => {
+        checkOut.elements.btnLogin().then(($lr) => {
             let lr = $lr.text().trim()
             expect(lr).to.equal('Đăng nhập / Đăng ký')
         })
-        checkOut.getLabelEnterInfo().then(($info) => {
-            let info = $info.text().trim()
-            expect(info).to.equal('Nhập thông tin đặt hàng')
-        })
 
-        checkOut.getBtnOrder().should('not.have.class', 'is-active')
+
+        checkOut.elements.btnOrder().should('not.have.class', 'is-active')
 
         // cy.get('.user-address-book-update-info-modal').should('have.attr', 'aria-hidden', 'true')
         //tạo địa chỉ
-        checkOut.getLabelEnterInfo().click()
+        checkOut.elements.labelEnterInfo().click()
 
         checkOut.fillCustomerName('QC_test')
         checkOut.fillCustomerPhone('0353260584')
-        checkOut.fillCustomerEmail('test1@yopmail.com')
+        checkOut.fillCustomerEmail('trinh-test-03@gmail.com')
 
         checkOut.selectCity()
 
@@ -605,54 +570,51 @@ describe('Checkout', () => {
     it('Không nhập tất cả thông tin trong form địa chỉ người nhận hàng', function () {
         let checkOut = new CheckOut()
         let home = new HomePage()
-        let addToCard = new AddToCard()
+        let cartPage = new CartPage()
 
         //search in store
         home.searchInStore(keyword)
 
-       //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
-        addToCard.getPricedProduct().then(($el) => {
-           const title = addToCard.findCardTitle($el);
+        //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
+        home.elements.pricedProduct().then(($el) => {
+            const title = home.elements.findCartTitle()($el);
 
-           addToCard.addToCard($el)
-           cy.wait(3000)
+            home.addProductToCart($el)
+            cy.wait(3000)
 
-           //thêm một sản phẩm thành công vào giỏ hàng
-           addToCard.getCardQuantity().should('have.text', 1)
+            //thêm một sản phẩm thành công vào giỏ hàng
+            cartPage.getCardQuantity().should('have.text', 1)
 
-           //redirect tới trang giỏ hàng
-           addToCard.goToCardPage()
+            //redirect tới trang giỏ hàng
+            home.goToCartPage()
 
-           cy.url().should('include', '/gio-hang-cua-ban')
+            cy.url().should('include', '/gio-hang-cua-ban')
 
-           //check tên sản phẩm
-           addToCard.getProductName().then(($name) => {
-               const name = $name.text().trim();
-               expect(name).to.equal(title)
-           })
-       })
+            //check tên sản phẩm
+            cartPage.elements.productName().then(($name) => {
+                const name = $name.text().trim();
+                expect(name).to.equal(title)
+            })
+        })
 
         //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
+        home.goToCartPage()
         cy.url().should('include', '/gio-hang-cua-ban')
 
-        addToCard.order()
+        cartPage.order()
 
         //check thông tin đặt hàng
-        checkOut.getBtnLogin().then(($lr) => {
+        checkOut.elements.btnLogin().then(($lr) => {
             let lr = $lr.text().trim()
             expect(lr).to.equal('Đăng nhập / Đăng ký')
         })
-        checkOut.getLabelEnterInfo().then(($info) => {
-            let info = $info.text().trim()
-            expect(info).to.equal('Nhập thông tin đặt hàng')
-        })
 
-        checkOut.getBtnOrder().should('not.have.class', 'is-active')
+
+        checkOut.elements.btnOrder().should('not.have.class', 'is-active')
 
         // cy.get('.user-address-book-update-info-modal').should('have.attr', 'aria-hidden', 'true')
         //tạo địa chỉ
-        checkOut.getLabelEnterInfo().click()
+        checkOut.elements.labelEnterInfo().click()
 
         checkOut.createInfo()
 
@@ -681,58 +643,55 @@ describe('Checkout', () => {
     it('Hủy thao tác nhập thông tin đơn hàng', function () {
         let checkOut = new CheckOut()
         let home = new HomePage()
-        let addToCard = new AddToCard()
+        let cartPage = new CartPage()
 
         // search product in store
         home.searchInStore(keyword)
 
-       //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
-        addToCard.getPricedProduct().then(($el) => {
-           const title = addToCard.findCardTitle($el);
+        //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
+        home.elements.pricedProduct().then(($el) => {
+            const title = home.elements.findCartTitle()($el);
 
-           addToCard.addToCard($el)
-           cy.wait(3000)
+            home.addProductToCart($el)
+            cy.wait(3000)
 
-           //thêm một sản phẩm thành công vào giỏ hàng
-           addToCard.getCardQuantity().should('have.text', 1)
+            //thêm một sản phẩm thành công vào giỏ hàng
+            cartPage.getCardQuantity().should('have.text', 1)
 
-           //redirect tới trang giỏ hàng
-           addToCard.goToCardPage()
+            //redirect tới trang giỏ hàng
+            home.goToCartPage()
 
-           cy.url().should('include', '/gio-hang-cua-ban')
+            cy.url().should('include', '/gio-hang-cua-ban')
 
-           //check tên sản phẩm
-           addToCard.getProductName().then(($name) => {
-               const name = $name.text().trim();
-               expect(name).to.equal(title)
-           })
-       })
+            //check tên sản phẩm
+            cartPage.elements.productName().then(($name) => {
+                const name = $name.text().trim();
+                expect(name).to.equal(title)
+            })
+        })
 
         //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
+        home.goToCartPage()
         cy.url().should('include', '/gio-hang-cua-ban')
 
-        addToCard.order()
+        cartPage.order()
 
         //check thông tin đặt hàng
-        checkOut.getBtnLogin().then(($lr) => {
+        checkOut.elements.btnLogin().then(($lr) => {
             let lr = $lr.text().trim()
             expect(lr).to.equal('Đăng nhập / Đăng ký')
         })
-        checkOut.getLabelEnterInfo().then(($info) => {
-            let info = $info.text().trim()
-            expect(info).to.equal('Nhập thông tin đặt hàng')
-        })
 
-        checkOut.getBtnOrder().should('not.have.class', 'is-active')
+
+        checkOut.elements.btnOrder().should('not.have.class', 'is-active')
 
         // cy.get('.user-address-book-update-info-modal').should('have.attr', 'aria-hidden', 'true')
         //tạo địa chỉ
-        checkOut.getLabelEnterInfo().click()
+        checkOut.elements.labelEnterInfo().click()
 
         checkOut.fillCustomerName('QC_test')
         checkOut.fillCustomerPhone('0353260584')
-        checkOut.fillCustomerEmail('test1@yopmail.com')
+        checkOut.fillCustomerEmail('trinh-test-03@gmail.com')
 
         checkOut.selectCity()
 
@@ -744,84 +703,77 @@ describe('Checkout', () => {
 
         checkOut.closeAddressModal()
 
-        checkOut.getBtnLogin().then(($lr) => {
+        checkOut.elements.btnLogin().then(($lr) => {
             let lr = $lr.text().trim()
             expect(lr).to.equal('Đăng nhập / Đăng ký')
         })
-        checkOut.getLabelEnterInfo().then(($info) => {
-            let info = $info.text().trim()
-            expect(info).to.equal('Nhập thông tin đặt hàng')
-        })
 
-        checkOut.getBtnOrder().should('not.have.class', 'is-active')
+
+        checkOut.elements.btnOrder().should('not.have.class', 'is-active')
     })
 
     it('Nhập đầy đủ thông tin sản phẩm và check out', function () {
         let checkOut = new CheckOut()
         let home = new HomePage()
-        let addToCard = new AddToCard()
-        let cancelOrder = new CancelOrder()
+        let cartPage = new CartPage()
 
         // search product in store
         home.searchInStore(keyword)
 
         //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
-        addToCard.getPricedProduct().then(($el) => {
-            const title = addToCard.findCardTitle($el);
+        home.elements.pricedProduct().then(($el) => {
+            const title = home.elements.findCartTitle()($el);
 
-            addToCard.addToCard($el)
+            home.addProductToCart($el)
             cy.wait(3000)
 
             //thêm một sản phẩm thành công vào giỏ hàng
-            addToCard.getCardQuantity().should('have.text', 1)
+            cartPage.getCardQuantity().should('have.text', 1)
 
             //redirect tới trang giỏ hàng
-            addToCard.goToCardPage()
+            home.goToCartPage()
 
             cy.url().should('include', '/gio-hang-cua-ban')
 
             //check tên sản phẩm
-            addToCard.getProductName().then(($name) => {
+            cartPage.elements.productName().then(($name) => {
                 const name = $name.text().trim();
                 expect(name).to.equal(title)
             })
         })
 
         //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
+        home.goToCartPage()
         cy.url().should('include', '/gio-hang-cua-ban')
 
         let sumPrice = 0
-        addToCard.getTotalPriceAProduct().each(($el, index, $list) => {
+        cartPage.elements.totalPriceAProduct().each(($el, index, $list) => {
             sumPrice = checkOut.convertToNumber($el) + sumPrice
         })
 
-        addToCard.getTotalValueOrder().then(($price) => {
+        cartPage.elements.totalValueOrder().then(($price) => {
             let resCPrice = checkOut.convertToNumber($price)
             expect(resCPrice, 'Tổng tiền sản phẩm: ').to.equal(sumPrice)
         })
 
-        addToCard.order()
+        cartPage.order()
 
         //check thông tin đặt hàng
-        checkOut.getBtnLogin().then(($lr) => {
+        checkOut.elements.btnLogin().then(($lr) => {
             let lr = $lr.text().trim()
             expect(lr).to.equal('Đăng nhập / Đăng ký')
         })
-        checkOut.getLabelEnterInfo().then(($info) => {
-            let info = $info.text().trim()
-            expect(info).to.equal('Nhập thông tin đặt hàng')
-        })
 
-        checkOut.getBtnOrder().should('not.have.class', 'is-active')
+
+        checkOut.elements.btnOrder().should('not.have.class', 'is-active')
 
         // cy.get('.user-address-book-update-info-modal').should('have.attr', 'aria-hidden', 'true')
         //tạo địa chỉ
-        checkOut.getLabelEnterInfo().click()
+        checkOut.elements.labelEnterInfo().click()
 
         checkOut.fillCustomerName('test')
         checkOut.fillCustomerPhone('0353260584')
-        checkOut.fillCustomerEmail('test1@yopmail.com')
+        checkOut.fillCustomerEmail('trinh-test-03@gmail.com')
 
         checkOut.selectCity()
 
@@ -843,8 +795,8 @@ describe('Checkout', () => {
         checkOut.getTotalOrderPrice().then(($sumPrice) => {
             resSumPrice = checkOut.convertToNumber($sumPrice)
         })
-        checkOut.getBtnOrder().should('have.class', 'is-active')
-        checkOut.getBtnOrder().click()
+        checkOut.elements.btnOrder().should('have.class', 'is-active')
+        checkOut.elements.btnOrder().click()
 
         checkOut.acceptRule()
 
@@ -861,7 +813,7 @@ describe('Checkout', () => {
             }
         })
 
-        cancelOrder.checkOrder()
+        checkOut.checkOrder()
         cy.url().should('include', '/kiem-tra-don-hang')
 
     })
@@ -869,54 +821,51 @@ describe('Checkout', () => {
     it('Đăng nhập tài khoản đã có địa chỉ mặc định', function () {
         let checkOut = new CheckOut()
         let home = new HomePage()
-        let addToCard = new AddToCard()
+        let cartPage = new CartPage()
         let login = new LoginPage()
 
         // search product in store
         home.searchInStore(keyword)
 
-       //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
-        addToCard.getPricedProduct().then(($el) => {
-           const title = addToCard.findCardTitle($el);
+        //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
+        home.elements.pricedProduct().then(($el) => {
+            const title = home.elements.findCartTitle()($el);
 
-           addToCard.addToCard($el)
-           cy.wait(3000)
+            home.addProductToCart($el)
+            cy.wait(3000)
 
-           //thêm một sản phẩm thành công vào giỏ hàng
-           addToCard.getCardQuantity().should('have.text', 1)
+            //thêm một sản phẩm thành công vào giỏ hàng
+            cartPage.getCardQuantity().should('have.text', 1)
 
-           //redirect tới trang giỏ hàng
-           addToCard.goToCardPage()
+            //redirect tới trang giỏ hàng
+            home.goToCartPage()
 
-           cy.url().should('include', '/gio-hang-cua-ban')
+            cy.url().should('include', '/gio-hang-cua-ban')
 
-           //check tên sản phẩm
-           addToCard.getProductName().then(($name) => {
-               const name = $name.text().trim();
-               expect(name).to.equal(title)
-           })
-       })
+            //check tên sản phẩm
+            cartPage.elements.productName().then(($name) => {
+                const name = $name.text().trim();
+                expect(name).to.equal(title)
+            })
+        })
 
         //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
+        home.goToCartPage()
         cy.url().should('include', '/gio-hang-cua-ban')
 
-        addToCard.order()
+        cartPage.order()
 
         //check thông tin đặt hàng
-        checkOut.getBtnLogin().then(($lr) => {
+        checkOut.elements.btnLogin().then(($lr) => {
             let lr = $lr.text().trim()
             expect(lr).to.equal('Đăng nhập / Đăng ký')
         })
-        checkOut.getLabelEnterInfo().then(($info) => {
-            let info = $info.text().trim()
-            expect(info).to.equal('Nhập thông tin đặt hàng')
-        })
 
-        checkOut.getBtnOrder().should('not.have.class', 'is-active')
+
+        checkOut.elements.btnOrder().should('not.have.class', 'is-active')
 
         // Đăng nhập
-        checkOut.getBtnLogin().click()
+        checkOut.elements.btnLogin().click()
         cy.url().should('include', 'dang-nhap')
 
         login.fillEmail(this.data.email)
@@ -926,60 +875,57 @@ describe('Checkout', () => {
         cy.url().should('include', 'xac-nhan-thong-tin-dat-hang')
 
         cy.wait(3000)
-        checkOut.getBtnOrder().should('have.class', 'is-active')
+        checkOut.elements.btnOrder().should('have.class', 'is-active')
     })
 
     it('Đăng nhập tài khoản chưa có địa chỉ mặc định', function () {
         const checkOut = new CheckOut()
         const home = new HomePage()
-        const addToCard = new AddToCard()
+        const cartPage = new CartPage()
         const login = new LoginPage()
 
         // search product in store
         home.searchInStore(keyword)
 
-       //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
-        addToCard.getPricedProduct().then(($el) => {
-           const title = addToCard.findCardTitle($el);
+        //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
+        home.elements.pricedProduct().then(($el) => {
+            const title = home.elements.findCartTitle()($el);
 
-           addToCard.addToCard($el)
-           cy.wait(3000)
+            home.addProductToCart($el)
+            cy.wait(3000)
 
-           //thêm một sản phẩm thành công vào giỏ hàng
-           addToCard.getCardQuantity().should('have.text', 1)
+            //thêm một sản phẩm thành công vào giỏ hàng
+            cartPage.getCardQuantity().should('have.text', 1)
 
-           //redirect tới trang giỏ hàng
-           addToCard.goToCardPage()
+            //redirect tới trang giỏ hàng
+            home.goToCartPage()
 
-           cy.url().should('include', '/gio-hang-cua-ban')
+            cy.url().should('include', '/gio-hang-cua-ban')
 
-           //check tên sản phẩm
-           addToCard.getProductName().then(($name) => {
-               const name = $name.text().trim();
-               expect(name).to.equal(title)
-           })
-       })
+            //check tên sản phẩm
+            cartPage.elements.productName().then(($name) => {
+                const name = $name.text().trim();
+                expect(name).to.equal(title)
+            })
+        })
 
         //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
+        home.goToCartPage()
         cy.url().should('include', '/gio-hang-cua-ban')
 
-        addToCard.order()
+        cartPage.order()
 
         //check thông tin đặt hàng
-        checkOut.getBtnLogin().then(($lr) => {
+        checkOut.elements.btnLogin().then(($lr) => {
             let lr = $lr.text().trim()
             expect(lr).to.equal('Đăng nhập / Đăng ký')
         })
-        checkOut.getLabelEnterInfo().then(($info) => {
-            let info = $info.text().trim()
-            expect(info).to.equal('Nhập thông tin đặt hàng')
-        })
 
-        checkOut.getBtnOrder().should('not.have.class', 'is-active')
+
+        checkOut.elements.btnOrder().should('not.have.class', 'is-active')
 
         // Đăng nhập
-        checkOut.getBtnLogin().click()
+        checkOut.elements.btnLogin().click()
         cy.url().should('include', 'dang-nhap')
 
         login.fillEmail(this.data.email2)
@@ -992,14 +938,14 @@ describe('Checkout', () => {
     it('Đăng ký tài khoản mới', function () {
         let checkOut = new CheckOut()
         let home = new HomePage()
-        let addToCard = new AddToCard()
+        let cartPage = new CartPage()
     })
 
     /////////Login tài khoản có địa chỉ trước khi checkout
     it('Login tài khoản có sổ địa chỉ trước khi thanh toán', function () {
         let checkOut = new CheckOut()
         let home = new HomePage()
-        let addToCard = new AddToCard()
+        let cartPage = new CartPage()
         let login = new LoginPage()
 
         //login
@@ -1014,34 +960,34 @@ describe('Checkout', () => {
 
         //get quantity product in card
         var itemQuantity
-        addToCard.getCardQuantity().then(($el) => {
+        cartPage.getCardQuantity().then(($el) => {
             itemQuantity = Number($el.text())
         })
 
         // search product in store
         home.searchInStore(keyword)
 
-       //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
-        addToCard.getPricedProduct().then(($el) => {
-           const title = addToCard.findCardTitle($el);
+        //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
+        home.elements.pricedProduct().then(($el) => {
+            const title = home.elements.findCartTitle()($el);
 
-           addToCard.addToCard($el)
-           cy.wait(3000)
+            home.addProductToCart($el)
+            cy.wait(3000)
 
-           //thêm một sản phẩm thành công vào giỏ hàng
-           addToCard.getCardQuantity().should('have.text', itemQuantity + 1)
+            //thêm một sản phẩm thành công vào giỏ hàng
+            cartPage.getCardQuantity().should('have.text', itemQuantity + 1)
 
-           //redirect tới trang giỏ hàng
-           addToCard.goToCardPage()
+            //redirect tới trang giỏ hàng
+            home.goToCartPage()
 
-           cy.url().should('include', '/gio-hang-cua-ban')
+            cy.url().should('include', '/gio-hang-cua-ban')
 
-           //check tên sản phẩm
-           addToCard.getProductName().then(($name) => {
-               const name = $name.text().trim()
-               expect(name).to.equal(title)
-           })
-       })
+            //check tên sản phẩm
+            cartPage.elements.productName().then(($name) => {
+                const name = $name.text().trim()
+                expect(name).to.equal(title)
+            })
+        })
 
         //get địa chỉ trong sổ địa chỉ
         var username, phoneNumber, address
@@ -1066,21 +1012,21 @@ describe('Checkout', () => {
         })
 
         //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
+        home.goToCartPage()
         cy.url().should('include', '/gio-hang-cua-ban')
 
         //tổng giá trị sản phẩm trong giỏ hàng
         let sumPrice = 0
-        addToCard.getTotalPriceAProduct().each(($el, index, $list) => {
+        cartPage.elements.totalPriceAProduct().each(($el, index, $list) => {
             sumPrice = checkOut.convertToNumber($el) + sumPrice
         })
         //check tổng giá trị sản phẩm trong giỏ hàng
-        addToCard.getTotalValueOrder().then(($price) => {
+        cartPage.elements.totalValueOrder().then(($price) => {
             let resCPrice = checkOut.convertToNumber($price)
             expect(resCPrice, 'Tổng tiền sản phẩm').to.equal(sumPrice)
         })
         // Chuyển tới trang thanh toán từ giỏ hàng
-        addToCard.order()
+        cartPage.order()
         //check giá sản phẩm
         checkOut.getTotalProductPrice().then(($dPrice) => {
             let resDPrice = checkOut.convertToNumber($dPrice)
@@ -1113,8 +1059,8 @@ describe('Checkout', () => {
             resSumPrice = checkOut.convertToNumber($sumPrice)
         })
         //Thanh toán đơn hàng
-        checkOut.getBtnOrder().should('have.class', 'is-active')
-        checkOut.getBtnOrder().click()
+        checkOut.elements.btnOrder().should('have.class', 'is-active')
+        checkOut.elements.btnOrder().click()
 
         //đồng ý điều khoản
         checkOut.acceptRule()
@@ -1138,7 +1084,7 @@ describe('Checkout', () => {
     it('Tạo địa chỉ nhận hàng mới với user đã đăng nhập trước đó', function () {
         let checkOut = new CheckOut()
         let home = new HomePage()
-        let addToCard = new AddToCard()
+        let cartPage = new CartPage()
         let login = new LoginPage()
 
         //login
@@ -1153,34 +1099,34 @@ describe('Checkout', () => {
 
         //get quantity product in card
         var itemQuantity
-        addToCard.getCardQuantity().then(($el) => {
+        cartPage.getCardQuantity().then(($el) => {
             itemQuantity = Number($el.text())
         })
 
         //search product in store
         home.searchInStore(keyword)
 
-       //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
-        addToCard.getPricedProduct().then(($el) => {
-           const title = addToCard.findCardTitle($el);
+        //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
+        home.elements.pricedProduct().then(($el) => {
+            const title = home.elements.findCartTitle()($el);
 
-           addToCard.addToCard($el)
-           cy.wait(3000)
+            home.addProductToCart($el)
+            cy.wait(3000)
 
-           //thêm một sản phẩm thành công vào giỏ hàng
-           addToCard.getCardQuantity().should('have.text', itemQuantity + 1)
+            //thêm một sản phẩm thành công vào giỏ hàng
+            cartPage.getCardQuantity().should('have.text', itemQuantity + 1)
 
-           //redirect tới trang giỏ hàng
-           addToCard.goToCardPage()
+            //redirect tới trang giỏ hàng
+            home.goToCartPage()
 
-           cy.url().should('include', '/gio-hang-cua-ban')
+            cy.url().should('include', '/gio-hang-cua-ban')
 
-           //check tên sản phẩm
-           addToCard.getProductName().then(($name) => {
-               const name = $name.text().trim();
-               expect(name).to.equal(title)
-           })
-       })
+            //check tên sản phẩm
+            cartPage.elements.productName().then(($name) => {
+                const name = $name.text().trim();
+                expect(name).to.equal(title)
+            })
+        })
 
         //get địa chỉ trong sổ địa chỉ
         var username, phoneNumber, address
@@ -1205,21 +1151,21 @@ describe('Checkout', () => {
         })
 
         //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
+        home.goToCartPage()
         cy.url().should('include', '/gio-hang-cua-ban')
 
         //tổng giá trị sản phẩm trong giỏ hàng
         let sumPrice = 0
-        addToCard.getTotalPriceAProduct().each(($el, index, $list) => {
+        cartPage.elements.totalPriceAProduct().each(($el, index, $list) => {
             sumPrice = checkOut.convertToNumber($el) + sumPrice
         })
         //check tổng giá trị sản phẩm trong giỏ hàng
-        addToCard.getTotalValueOrder().then(($price) => {
+        cartPage.elements.totalValueOrder().then(($price) => {
             let resCPrice = checkOut.convertToNumber($price)
             expect(resCPrice, 'Tổng tiền sản phẩm').to.equal(sumPrice)
         })
         // Chuyển tới trang thanh toán từ giỏ hàng
-        addToCard.order()
+        cartPage.order()
         //check giá sản phẩm
         checkOut.getTotalProductPrice().then(($dPrice) => {
             let resDPrice = checkOut.convertToNumber($dPrice)
@@ -1288,7 +1234,7 @@ describe('Checkout', () => {
     it('Thêm địa chỉ người nhận hàng khác người đặt hàng', function () {
         let checkOut = new CheckOut()
         let home = new HomePage()
-        let addToCard = new AddToCard()
+        let cartPage = new CartPage()
         let login = new LoginPage()
 
         //login
@@ -1302,34 +1248,34 @@ describe('Checkout', () => {
         cy.closePopup()
 
         var itemQuantity
-        addToCard.getCardQuantity().then(($el) => {
+        cartPage.getCardQuantity().then(($el) => {
             itemQuantity = Number($el.text())
         })
 
         //search product in store
         home.searchInStore(keyword)
 
-       //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
-        addToCard.getPricedProduct().then(($el) => {
-           const title = addToCard.findCardTitle($el);
+        //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
+        home.elements.pricedProduct().then(($el) => {
+            const title = home.elements.findCartTitle()($el);
 
-           addToCard.addToCard($el)
-           cy.wait(3000)
+            home.addProductToCart($el)
+            cy.wait(3000)
 
-           //thêm một sản phẩm thành công vào giỏ hàng
-           addToCard.getCardQuantity().should('have.text', itemQuantity + 1)
+            //thêm một sản phẩm thành công vào giỏ hàng
+            cartPage.getCardQuantity().should('have.text', itemQuantity + 1)
 
-           //redirect tới trang giỏ hàng
-           addToCard.goToCardPage()
+            //redirect tới trang giỏ hàng
+            home.goToCartPage()
 
-           cy.url().should('include', '/gio-hang-cua-ban')
+            cy.url().should('include', '/gio-hang-cua-ban')
 
-           //check tên sản phẩm
-           addToCard.getProductName().then(($name) => {
-               const name = $name.text().trim();
-               expect(name).to.equal(title)
-           })
-       })
+            //check tên sản phẩm
+            cartPage.elements.productName().then(($name) => {
+                const name = $name.text().trim();
+                expect(name).to.equal(title)
+            })
+        })
 
         //get địa chỉ trong sổ địa chỉ
         var username, phoneNumber, address
@@ -1354,21 +1300,21 @@ describe('Checkout', () => {
         })
 
         //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
+        home.goToCartPage()
         cy.url().should('include', '/gio-hang-cua-ban')
 
         //tổng giá trị sản phẩm trong giỏ hàng
         let sumPrice = 0
-        addToCard.getTotalPriceAProduct().each(($el, index, $list) => {
+        cartPage.elements.totalPriceAProduct().each(($el, index, $list) => {
             sumPrice = checkOut.convertToNumber($el) + sumPrice
         })
         //check tổng giá trị sản phẩm trong giỏ hàng
-        addToCard.getTotalValueOrder().then(($price) => {
+        cartPage.elements.totalValueOrder().then(($price) => {
             let resCPrice = checkOut.convertToNumber($price)
             expect(resCPrice, 'Tổng tiền sản phẩm').to.equal(sumPrice)
         })
         // Chuyển tới trang thanh toán từ giỏ hàng
-        addToCard.order()
+        cartPage.order()
         //check giá sản phẩm
         checkOut.getTotalProductPrice().then(($dPrice) => {
             let resDPrice = checkOut.convertToNumber($dPrice)
@@ -1409,15 +1355,15 @@ describe('Checkout', () => {
 
             cy.wait(5000)
             checkOut.getFirstAddress()
-            
+
             cy.get('.field-label > .label-link').then(($el) => {
                 expect($el, 'Lời nhắn đến người nhận').to.exist
             })
         })
 
         //Thanh toán đơn hàng
-        checkOut.getBtnOrder().should('have.class', 'is-active')
-        checkOut.getBtnOrder().click()
+        checkOut.elements.btnOrder().should('have.class', 'is-active')
+        checkOut.elements.btnOrder().click()
 
         //đồng ý điều khoản 
         checkOut.acceptRule()
@@ -1440,7 +1386,7 @@ describe('Checkout', () => {
     it('Thanh toán đơn hàng qua viettel pay', function () {
         let checkOut = new CheckOut()
         let home = new HomePage()
-        let addToCard = new AddToCard()
+        let cartPage = new CartPage()
         let login = new LoginPage()
 
         //login
@@ -1455,34 +1401,34 @@ describe('Checkout', () => {
 
         //get quantity product in card
         var itemQuantity
-        addToCard.getCardQuantity().then(($el) => {
+        cartPage.getCardQuantity().then(($el) => {
             itemQuantity = Number($el.text())
         })
 
         //search product in store
         home.searchInStore(keyword)
 
-       //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
-        addToCard.getPricedProduct().then(($el) => {
-           const title = addToCard.findCardTitle($el);
+        //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
+        home.elements.pricedProduct().then(($el) => {
+            const title = home.elements.findCartTitle()($el);
 
-           addToCard.addToCard($el)
-           cy.wait(3000)
+            home.addProductToCart($el)
+            cy.wait(3000)
 
-           //thêm một sản phẩm thành công vào giỏ hàng
-           addToCard.getCardQuantity().should('have.text',itemQuantity + 1)
+            //thêm một sản phẩm thành công vào giỏ hàng
+            cartPage.getCardQuantity().should('have.text', itemQuantity + 1)
 
-           //redirect tới trang giỏ hàng
-           addToCard.goToCardPage()
+            //redirect tới trang giỏ hàng
+            home.goToCartPage()
 
-           cy.url().should('include', '/gio-hang-cua-ban')
+            cy.url().should('include', '/gio-hang-cua-ban')
 
-           //check tên sản phẩm
-           addToCard.getProductName().then(($name) => {
-               const name = $name.text().trim();
-               expect(name).to.equal(title)
-           })
-       })
+            //check tên sản phẩm
+            cartPage.elements.productName().then(($name) => {
+                const name = $name.text().trim();
+                expect(name).to.equal(title)
+            })
+        })
 
         //get địa chỉ trong sổ địa chỉ
         var username, phoneNumber, address
@@ -1507,21 +1453,21 @@ describe('Checkout', () => {
         })
 
         //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
+        home.goToCartPage()
         cy.url().should('include', '/gio-hang-cua-ban')
 
         //tổng giá trị sản phẩm trong giỏ hàng
         let sumPrice = 0
-        addToCard.getTotalPriceAProduct().each(($el, index, $list) => {
+        cartPage.elements.totalPriceAProduct().each(($el, index, $list) => {
             sumPrice = checkOut.convertToNumber($el) + sumPrice
         })
         //check tổng giá trị sản phẩm trong giỏ hàng
-        addToCard.getTotalValueOrder().then(($price) => {
+        cartPage.elements.totalValueOrder().then(($price) => {
             let resCPrice = checkOut.convertToNumber($price)
             expect(resCPrice, 'Tổng tiền sản phẩm').to.equal(sumPrice)
         })
         // Chuyển tới trang thanh toán từ giỏ hàng
-        addToCard.order()
+        cartPage.order()
         //check giá sản phẩm
         checkOut.getTotalProductPrice().then(($dPrice) => {
             let resDPrice = checkOut.convertToNumber($dPrice)
@@ -1558,43 +1504,43 @@ describe('Checkout', () => {
         cy.get('.payment-method-group-col > .mz-grid > :nth-child(1)').click()
 
         //Thanh toán đơn hàng
-        checkOut.getBtnOrder().should('have.class', 'is-active')
-        checkOut.getBtnOrder().click()
+        checkOut.elements.btnOrder().should('have.class', 'is-active')
+        checkOut.elements.btnOrder().click()
 
         //đồng ý điều khoản 
         checkOut.acceptRule()
 
         //redirect to page history order 
         cy.visit('https://fado.vn/lich-su-don-hang')
-        
+
         //check lại order sau khi đặt hàng thành công
         checkOut.checkHistoryOrder()
 
-        checkOut.getMethodCheckOutText().should((txt) =>{
+        checkOut.getMethodCheckOutText().should((txt) => {
             expect(txt.trim()).to.eq('Viettel Pay')
         })
 
         cy.url().should('include', 'chi-tiet-don-hang')
- 
-         checkOut.clickBtnCancelOrder()
- 
-         // show modal hủy đơn hàng khi click btn 'Hủy đơn hàng'
-         checkOut.getCancelOrderModal().should('have.class', 'show')
 
-         //select lý do hủy đơn hàng
-         checkOut.selectReasonCancel()
- 
-         //xác nhận hủy đơn hàng
-         checkOut.cancelOrder()
- 
-         //xacs nhận đơn hàng đã được hủy
-         checkOut.getOrderStatusText().should('contain', 'Đã hủy')
+        checkOut.clickBtnCancelOrder()
+
+        // show modal hủy đơn hàng khi click btn 'Hủy đơn hàng'
+        checkOut.getCancelOrderModal().should('have.class', 'show')
+
+        //select lý do hủy đơn hàng
+        checkOut.selectReasonCancel()
+
+        //xác nhận hủy đơn hàng
+        checkOut.cancelOrder()
+
+        //xacs nhận đơn hàng đã được hủy
+        checkOut.getOrderStatusText().should('contain', 'Đã hủy')
     })
 
     it('Thanh toán đơn hàng qua zalo pay', function () {
         let checkOut = new CheckOut()
         let home = new HomePage()
-        let addToCard = new AddToCard()
+        let cartPage = new CartPage()
         let login = new LoginPage()
 
         //login
@@ -1609,34 +1555,34 @@ describe('Checkout', () => {
 
         //get quantity product in card
         var itemQuantity
-        addToCard.getCardQuantity().then(($el) => {
+        cartPage.getCardQuantity().then(($el) => {
             itemQuantity = Number($el.text())
         })
 
         //search product in store
         home.searchInStore(keyword)
 
-       //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
-        addToCard.getPricedProduct().then(($el) => {
-           const title = addToCard.findCardTitle($el);
+        //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
+        home.elements.pricedProduct().then(($el) => {
+            const title = home.elements.findCartTitle()($el);
 
-           addToCard.addToCard($el)
-           cy.wait(3000)
+            home.addProductToCart($el)
+            cy.wait(3000)
 
-           //thêm một sản phẩm thành công vào giỏ hàng
-           addToCard.getCardQuantity().should('have.text',itemQuantity + 1)
+            //thêm một sản phẩm thành công vào giỏ hàng
+            cartPage.getCardQuantity().should('have.text', itemQuantity + 1)
 
-           //redirect tới trang giỏ hàng
-           addToCard.goToCardPage()
+            //redirect tới trang giỏ hàng
+            home.goToCartPage()
 
-           cy.url().should('include', '/gio-hang-cua-ban')
+            cy.url().should('include', '/gio-hang-cua-ban')
 
-           //check tên sản phẩm
-           addToCard.getProductName().then(($name) => {
-               const name = $name.text().trim();
-               expect(name).to.equal(title)
-           })
-       })
+            //check tên sản phẩm
+            cartPage.elements.productName().then(($name) => {
+                const name = $name.text().trim();
+                expect(name).to.equal(title)
+            })
+        })
 
         //get địa chỉ trong sổ địa chỉ
         var username, phoneNumber, address
@@ -1661,21 +1607,21 @@ describe('Checkout', () => {
         })
 
         //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
+        home.goToCartPage()
         cy.url().should('include', '/gio-hang-cua-ban')
 
         //tổng giá trị sản phẩm trong giỏ hàng
         let sumPrice = 0
-        addToCard.getTotalPriceAProduct().each(($el, index, $list) => {
+        cartPage.elements.totalPriceAProduct().each(($el, index, $list) => {
             sumPrice = checkOut.convertToNumber($el) + sumPrice
         })
         //check tổng giá trị sản phẩm trong giỏ hàng
-        addToCard.getTotalValueOrder().then(($price) => {
+        cartPage.elements.totalValueOrder().then(($price) => {
             let resCPrice = checkOut.convertToNumber($price)
             expect(resCPrice, 'Tổng tiền sản phẩm').to.equal(sumPrice)
         })
         // Chuyển tới trang thanh toán từ giỏ hàng
-        addToCard.order()
+        cartPage.order()
         //check giá sản phẩm
         checkOut.getTotalProductPrice().then(($dPrice) => {
             let resDPrice = checkOut.convertToNumber($dPrice)
@@ -1712,37 +1658,37 @@ describe('Checkout', () => {
         checkOut.checkOutByZalo()
 
         //Thanh toán đơn hàng
-        checkOut.getBtnOrder().should('have.class', 'is-active')
-        checkOut.getBtnOrder().click()
+        checkOut.elements.btnOrder().should('have.class', 'is-active')
+        checkOut.elements.btnOrder().click()
 
         //đồng ý điều khoản 
         checkOut.acceptRule()
-        
+
         //redirect to page history order 
         cy.visit('https://fado.vn/lich-su-don-hang')
-        
+
         //check lại order sau khi đặt hàng thành công
         checkOut.checkHistoryOrder()
 
-        checkOut.getMethodCheckOutText().should((txt) =>{
+        checkOut.getMethodCheckOutText().should((txt) => {
             expect(txt.trim()).to.eq('Thanh toán qua ứng dụng ZaloPay')
         })
 
         cy.url().should('include', 'chi-tiet-don-hang')
- 
-         checkOut.clickBtnCancelOrder()
- 
-         // show modal hủy đơn hàng khi click btn 'Hủy đơn hàng'
-         checkOut.getCancelOrderModal().should('have.class', 'show')
 
-         //select lý do hủy đơn hàng
-         checkOut.selectReasonCancel()
- 
-         //xác nhận hủy đơn hàng
-         checkOut.cancelOrder()
- 
-         //xác nhận đơn hàng đã được hủy
-         checkOut.getOrderStatusText().should('contain', 'Đã hủy')
+        checkOut.clickBtnCancelOrder()
+
+        // show modal hủy đơn hàng khi click btn 'Hủy đơn hàng'
+        checkOut.getCancelOrderModal().should('have.class', 'show')
+
+        //select lý do hủy đơn hàng
+        checkOut.selectReasonCancel()
+
+        //xác nhận hủy đơn hàng
+        checkOut.cancelOrder()
+
+        //xác nhận đơn hàng đã được hủy
+        checkOut.getOrderStatusText().should('contain', 'Đã hủy')
 
     })
 
@@ -1750,7 +1696,7 @@ describe('Checkout', () => {
     it('Login tài khoản chưa có sổ địa chỉ trước khi thanh toán', function () {
         let checkOut = new CheckOut()
         let home = new HomePage()
-        let addToCard = new AddToCard()
+        let cartPage = new CartPage()
         let login = new LoginPage()
 
         //login
@@ -1765,7 +1711,7 @@ describe('Checkout', () => {
 
         //get quantity product in card
         var itemQuantity
-        addToCard.getCardQuantity().then(($el) => {
+        cartPage.getCardQuantity().then(($el) => {
             itemQuantity = Number($el.text())
         })
 
@@ -1774,17 +1720,17 @@ describe('Checkout', () => {
 
         //Thêm sản phẩm có giá đầu tiên vào giỏ hàng
         let title
-        addToCard.getPricedProduct().then(($el) => {
-            title = addToCard.findCardTitle($el);
+        home.elements.pricedProduct().then(($el) => {
+            title = home.elements.findCartTitle()($el);
 
-            addToCard.addToCard($el)
+            home.addProductToCart($el)
             cy.wait(3000)
 
             //thêm một sản phẩm thành công vào giỏ hàng
-            addToCard.getCardQuantity().should('have.text', itemQuantity + 1)
+            cartPage.getCardQuantity().should('have.text', itemQuantity + 1)
 
             //redirect tới trang giỏ hàng
-            addToCard.goToCardPage()
+            home.goToCartPage()
 
             cy.url().should('include', '/gio-hang-cua-ban')
 
@@ -1792,27 +1738,27 @@ describe('Checkout', () => {
 
         //check tên sản phẩm
         let productName = []
-        addToCard.getProductName().each(($el) => {
+        cartPage.elements.productName().each(($el) => {
             productName.push($el.text().trim())
             expect(productName).to.include(title)
         })
 
         //redirect tới trang giỏ hàng
-        addToCard.goToCardPage()
+        home.goToCartPage()
         cy.url().should('include', '/gio-hang-cua-ban')
 
         let sumPrice = 0
-        addToCard.getTotalPriceAProduct().each(($el, index, $list) => {
+        cartPage.elements.totalPriceAProduct().each(($el, index, $list) => {
             sumPrice = checkOut.convertToNumber($el) + sumPrice
         })
 
         //tổng tiền các sản phẩm trong giỏ hàng
-        addToCard.getTotalValueOrder().then(($price) => {
+        cartPage.elements.totalValueOrder().then(($price) => {
             let resCPrice = checkOut.convertToNumber($price)
             expect(resCPrice, 'Tổng tiền sản phẩm').to.equal(sumPrice)
         })
         // chuyển sang trang thanh toán
-        addToCard.order()
+        cartPage.order()
         // Tổng tiền sản phẩm
         checkOut.getTotalProductPrice().then(($dPrice) => {
             let resDPrice = checkOut.convertToNumber($dPrice)
@@ -1823,6 +1769,6 @@ describe('Checkout', () => {
             let crtInfo = $crtInfo.text().trim()
             expect(crtInfo).to.equal('Tạo thông tin đặt hàng')
         })
-        checkOut.getBtnOrder().should('not.have.class', 'is-active')
+        checkOut.elements.btnOrder().should('not.have.class', 'is-active')
     })
 })

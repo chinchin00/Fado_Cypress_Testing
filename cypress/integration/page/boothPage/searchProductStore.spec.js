@@ -119,7 +119,7 @@ describe('SEARCH PRODUCT IN STORE', () => {
             search.getCardTitle().eq(index).click({ force: true })
             cy.closePopup()
 
-            search.getProductName().then(($name) => {
+            search.elements.productName().then(($name) => {
                 const name = $name.text().trim()
                 expect(name).to.equal(productNames[index])
             })

@@ -2,6 +2,38 @@ import LoginPage from './loginPage'
 import SearchPage from './searchPage'
 
 class HomePage {
+    elements = {
+        pricedProduct: () => cy.get('.product-card').first('.mz-btn-gray'),
+        listPricedsProduct: () => cy.get('.product-card').find('.mz-btn-gray'),
+        findCartTitle: (el) => el.find('.product-card__title').text().trim(),
+        cartQuantity: () => cy.get('#header-cart-quantity'),
+        headerCartBtn: () => cy.get('#header-cart-quantity'),
+        userName: () => cy.get('#user-info__dropdown > .dropdown-head'), //get dropdown username on menu bar
+        productDeal: () => cy.get('.product-deal-action-card'),
+        pricedProductDeal: () => cy.get('.product-deal-action-card__current-price'),
+        productsHorizontal: () => cy.get('.product-horizontal-card'),
+        minPriceProductHorizontal: () => cy.get('.product-horizontal-card__min-price-number'),
+        dealTab: () => cy.get('.tab-item-label'),
+        pagingDeal:(index) => cy.get('.paging-nav > :nth-child(' + index + ')'), // get index page deal on 'Khap the gioi' tab
+        trendTab: (index) => cy.get('.tab-item-col > :nth-child(' + index + ')'),
+        productTrendTab: (index) => cy.get('.product-large-row > :nth-child('+ index + ') > .product-card'), //get prouct in Trend tab
+        suggestTab: (tab, item) => cy.get('.home-suggest-block:nth-child(' + tab +  ') > .block-head > .tab-segment > .tab-item:nth-child(' + item + ') > .tab-btn-name'),
+        currentPriceNumber: () => cy.get('.product-card__current-price-number')
+    }
+
+    // findCartTitle(el){
+    //     return el.find('.product-card__title').text().trim();
+    // }
+
+    addProductToCart(el) {
+        el.find('.mz-btn-gray').trigger("click");
+    }
+
+    goToCartPage() {
+        const button = this.elements.headerCartBtn();
+        button.click();
+    }
+
     closePopup() {
         cy.get('body').wait(1000).then($body => {
             if ($body.find('.close').length > 0) {
@@ -16,11 +48,6 @@ class HomePage {
 
     goToSignIn() {
         return new LoginPage();
-    }
-
-    //get dropdown username on menu bar
-    getUserName() {
-        return cy.get('#user-info__dropdown > .dropdown-head');
     }
 
     //search product
@@ -48,50 +75,6 @@ class HomePage {
         return cy.get('body');
     }
 
-    getProductDeal(){
-        return cy.get('.product-deal-action-card');
-    }
-
-    getPricedProductDeal(){
-        return cy.get('.product-deal-action-card__current-price');
-    }
-
-    // get Product Horizontal in home page
-    getProductHorizontal(){
-        return cy.get('.product-horizontal-card');
-    }
-
-    getMinPriceProductHorizontal(){
-        return cy.get('.product-horizontal-card__min-price-number');
-    }
-
-    getDealTab(){
-        // get list tab deal trên trang chủ
-        return cy.get('.tab-item-label');
-    }
-
-    getPagingDeal(index){
-        // get index page deal on 'Khap the gioi' tab
-        return cy.get('.paging-nav > :nth-child(' + index + ')');
-    }
-
-    getTrendTab(index){
-        // in homepage
-        return cy.get('.tab-item-col > :nth-child(' + index + ')');
-    }
-
-    getProductTrend(index){
-        // get prouct in Trend tab
-        return cy.get('.product-large-row > :nth-child('+ index + ') > .product-card');
-    }
-
-    getSuggestTab(tab, item){
-        return cy.get('.home-suggest-block:nth-child(' + tab +  ') > .block-head > .tab-segment > .tab-item:nth-child(' + item + ') > .tab-btn-name');
-    }
-
-    getCurrentPriceNumber(){
-        return cy.get('.product-card__current-price-number');
-    }
 }
 
 export default HomePage;

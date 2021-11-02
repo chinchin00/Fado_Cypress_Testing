@@ -36,11 +36,11 @@ class LoginPage{
 
     submit(){
         const btn =  cy.get('[data-test-login-btn-submit]');
-        btn.click().wait(4000);
+        btn.click();
     }
 
     getErrorMessage(){
-        return cy.get('#auth-block__register-form > .my-alert');
+        return cy.get('.my-alert');
     }
 
     getPassError(){

@@ -1,6 +1,6 @@
 /// <reference types="Cypress" />
 
-import AddToCard from "../../pageObjects/addToCard"
+import CartPage from "../../pageObjects/cartPage"
 import HomePage from "../../pageObjects/homePage"
 import SearchPage from "../../pageObjects/searchPage"
 
@@ -12,7 +12,7 @@ describe('CHECK PRODUCT IN HOME PAGE', () => {
     const checkPriced = () => {
         const home = new HomePage()
         const search = new SearchPage()
-        const addToCard = new AddToCard()
+        const cartPage = new CartPage()
 
         //count số sản phẩm có giá
         search.getProductList().then(($el) => {
@@ -20,7 +20,7 @@ describe('CHECK PRODUCT IN HOME PAGE', () => {
             numProduct = Number($el.length)
             expect(numProduct).to.be.greaterThan(30)
             cy.wait(2000)
-            addToCard.getListPricedsProduct().then(($price) => {
+            home.elements.listPricedsProduct().then(($price) => {
                 numPricedProduct = Number($price.length)
                 num = (numPricedProduct * 100) / numProduct
                 expect(num).to.be.greaterThan(90)
@@ -28,10 +28,10 @@ describe('CHECK PRODUCT IN HOME PAGE', () => {
         })
 
         //count số sản phẩm deal có giá
-        home.getProductDeal().then(($el) => {
+        home.elements.productDeal().then(($el) => {
             let numProduct, numPricedProduct
             numProduct = Number($el.length)
-            home.getPricedProductDeal().then(($price) => {
+            home.elements.pricedProductDeal().then(($price) => {
                 expect($price.text().trim()).to.not.contain('Đang cập nhật')
                 expect($price.text().trim()).to.not.contain('Xem báo giá')
                 numPricedProduct = Number($price.length)
@@ -39,12 +39,12 @@ describe('CHECK PRODUCT IN HOME PAGE', () => {
             })
         })
 
-        home.getProductHorizontal().then(($el) => {
+        home.elements.productsHorizontal().then(($el) => {
             let numProduct = Number($el.length)
             expect(numProduct).to.be.greaterThan(0)
             let card = Number($el.find('.mz-btn-gray').length)
             if ($el.find(minhorizontal).length > 0) {
-                let min = Number(home.getProductHorizontal().find(minhorizontal).length)
+                let min = Number(home.elements.productsHorizontal().find(minhorizontal).length)
                 card = card + min
             }
             expect(card, 'Sản phẩm có giá').to.equal(numProduct)
@@ -61,9 +61,9 @@ describe('CHECK PRODUCT IN HOME PAGE', () => {
         for (let i = 1; i < 7; i++) {
             if (i == 1 || i == 2 || i == 6) {
                 for (let j = 1; j < 5; j++) {
-                    home.getSuggestTab(i, j);
+                    home.elements.suggestTab(i, j);
                     cy.wait(2000);
-                    home.getCurrentPriceNumber().each(($el) => {
+                    home.elements.currentPriceNumber().each(($el) => {
                         const price = $el.text().trim()
                         expect(price, 'Sản phẩm có giá').to.exist
                         expect(price, 'Sản phẩm có giá').to.not.equal('Đang cập nhật')
@@ -72,9 +72,9 @@ describe('CHECK PRODUCT IN HOME PAGE', () => {
             }
             else {
                 for (let j = 1; j < 4; j++) {
-                    home.getSuggestTab(i, j);
+                    home.elements.suggestTab(i, j);
                     cy.wait(2000);
-                    home.getCurrentPriceNumber().each(($el) => {
+                    home.elements.currentPriceNumber().each(($el) => {
                         const price = $el.text().trim()
                         expect(price, 'Sản phẩm có giá').to.exist
                         expect(price, 'Sản phẩm có giá').to.not.equal('Đang cập nhật')
@@ -105,12 +105,12 @@ describe('CHECK PRODUCT IN HOME PAGE', () => {
         const home = new HomePage()
         const index = [1, 2, 3]
         cy.get(index).each(($index) => {
-            home.getPagingDeal($index).click({ force: true })
+            home.elements.pagingDeal($index).click({ force: true })
             cy.wait(3000)
-            home.getProductDeal().then(($el) => {
+            home.elements.productDeal().then(($el) => {
                 let numProduct, numPricedProduct
                 numProduct = Number($el.length)
-                home.getPricedProductDeal().then(($price) => {
+                home.elements.pricedProductDeal().then(($price) => {
                     expect($price.text().trim()).to.not.contain('Đang cập nhật')
                     expect($price.text().trim()).to.not.contain('Xem báo giá')
                     numPricedProduct = Number($price.length)
@@ -119,13 +119,13 @@ describe('CHECK PRODUCT IN HOME PAGE', () => {
             })
         })
 
-        home.getDealTab().each(($el, index, $list) => {
+        home.elements.dealTab().each(($el, index, $list) => {
             cy.get($el).click({ force: true })
             cy.wait(3000)
-            home.getProductDeal().then(($el) => {
+            home.elements.productDeal().then(($el) => {
                 let numProduct, numPricedProduct
                 numProduct = Number($el.length)
-                home.getPricedProductDeal().then(($price) => {
+                home.elements.pricedProductDeal().then(($price) => {
                     expect($price.text().trim()).to.not.equal('Đang cập nhật')
                     expect($price.text().trim()).to.not.equal('Xem báo giá')
                     numPricedProduct = Number($price.length)
@@ -141,10 +141,10 @@ describe('CHECK PRODUCT IN HOME PAGE', () => {
         const indexTrend = [1, 2, 3, 4, 5]
 
         cy.get(indexTab).each(($el) => {
-            home.getTrendTab($el).click({ force: true })
+            home.elements.trendTab($el).click({ force: true })
             cy.wait(2000)
             cy.get(indexTrend).each(($index) => {
-                home.getProductTrend($index).then(($price) => {
+                home.elements.productTrendTab($index).then(($price) => {
                     if ($price.find(currentPrice).length > 0) {
                         let price = $price.find(currentPrice).text().trim()
                         expect(price, 'Sản phẩm có giá').to.exist
@@ -154,7 +154,7 @@ describe('CHECK PRODUCT IN HOME PAGE', () => {
                     else {
                         expect($price.find(minPrice), 'Giá nhỏ nhất của sản phẩm').to.exist
                     }
-                    home.getProductHorizontal().then(($h) => {
+                    home.elements.productsHorizontal().then(($h) => {
                         let numProduct = Number($h.length)
                         expect(numProduct).to.be.greaterThan(0)
                         let card = Number($h.find('.mz-btn-gray').length)

@@ -1,6 +1,8 @@
 {
     "baseUrl": "https://fado.vn/",
     "env": {
-      "environment": "production"
+      "environment": "production",
+      "googleSocialLoginUsername": "thitrinh17061999@gmail.com",
+      "googleSocialLoginPassword": "QC-test@123"
     }
   }

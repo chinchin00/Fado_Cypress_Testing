@@ -10,14 +10,22 @@
     "cy:development": "cypress open --env ENV_NAME=development",
     "cy:stage": "cypress open --env ENV_NAME=stage",
     "cy:production": "cypress open --env ENV_NAME=production",
-    "specTest": "npm run test --spec \"cypress/integration/page/checkoutPage/*\" --no-exit"
+    "specTest": "npm run test --spec \"cypress/integration/page/checkoutPage/*\" --no-exit",
+    "cy:dashboard": "cypress run --record --key 902ccae1-7204-4c98-a5c4-bbdd8976aecb"
   },
   "author": "TrinhNT",
   "license": "ISC",
   "devDependencies": {
-    "cypress": "^7.5.0",
-    "cypress-failed-log": "^2.9.1",
-    "fs-extra": "^10.0.0",
+    "@testing-library/cypress": "^8.0.1",
+    "cypress": "^8.4.0",
+    "cypress-failed-log": "2.9.1",
+    "cypress-social-logins": "^1.11.3",
+    "fs-extra": "10.0.0",
     "path": "0.12.7"
+  },
+  "dependencies": {
+    "@cypress/request": "^2.88.6",
+    "form-data": "^4.0.0",
+    "fs-fs": "^1.0.0"
   }
 }

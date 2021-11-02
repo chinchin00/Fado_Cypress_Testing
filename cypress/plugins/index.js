@@ -30,11 +30,14 @@ function getConfigurationByEnvName(envName) {
   return fs.readJson(pathToConfigFile);
 }
 
+const {GoogleSocialLogin, FacebookSocialLogin} = require('cypress-social-logins').plugins
+
 module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
   on("task", {
-    failed: require("cypress-failed-log/src/failed")(),
+    GoogleSocialLogin: GoogleSocialLogin,
+    FacebookSocialLogin: FacebookSocialLogin
   });
 
   const envName = config.env.ENV_NAME || "production";

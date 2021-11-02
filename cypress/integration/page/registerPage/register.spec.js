@@ -51,7 +51,7 @@ describe('REGISTER', function () {
         register.submit()
         cy.url().should('eq', Cypress.config('baseUrl'))
 
-        home.getUserName().children().should('have.class', 'user-name-col')
+        home.elements.userName().children().should('have.class', 'user-name-col')
             .and('have.class', 'arrow-icon')
     })
 
@@ -83,7 +83,7 @@ describe('REGISTER', function () {
 
         register.fillFullName('QC_test')
 
-        register.fillEmail('trinh1@yopmail.com')
+        register.fillEmail('trinh-test-03@gmail.com')
 
         register.fillPhone(phone)
 
@@ -127,7 +127,7 @@ describe('REGISTER', function () {
         register.fillCapcha('hx68gs#32op')
 
         register.submit()
-        register.getEmailError().should('have.text', 'Vui lòng nhập Email đúng định dạng')
+        register.getEmailError().should('have.text', 'Email không hợp lệ')
     })
 
     it('Nhập dấu cách trước email', function () {
@@ -167,7 +167,7 @@ describe('REGISTER', function () {
         register.submit()
         cy.url().should('eq', Cypress.config('baseUrl'))
 
-        home.getUserName().children().should('have.class', 'user-name-col')
+        home.elements.userName().children().should('have.class', 'user-name-col')
             .and('have.class', 'arrow-icon')
     })
 
@@ -209,7 +209,7 @@ describe('REGISTER', function () {
         register.submit()
         cy.url().should('eq', Cypress.config('baseUrl'))
 
-        home.getUserName().children().should('have.class', 'user-name-col')
+        home.elements.userName().children().should('have.class', 'user-name-col')
             .and('have.class', 'arrow-icon')
     })
 
