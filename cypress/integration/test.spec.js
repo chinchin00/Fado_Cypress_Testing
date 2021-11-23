@@ -48,14 +48,27 @@ describe('SEARCH PRODUCT IN HOME PAGE', () => {
     }
     
     beforeEach(function () {
+        const home = new HomePage()
         cy.visitHomePage()
 
         home.closePopup()
     })
 
-    it('Switch suggest tab', function () {
-        const home = new HomePage()
-        checkSuggestProduct()
-        
+    it('Check all cat Fado', function () {
+        cy.visit('https://fado.vn/xem-tat-ca-danh-muc-fado')
+        cy.wait(1000)
+        const links = []
+        cy.get('.mz-container > .all-cate-section__head > .all-cate-section__head__title-col > a').each(($el, index, $list) => {
+            cy.get('.mz-container > .all-cate-section__head > .all-cate-section__head__title-col > a').eq(index).click({force:true})
+            cy.wait(2000)
+            cy.get('.mz-layout__main-col').then(($el) => {
+                if($el.find('.product-card-col').length > 0){
+                    const url = cy.url()
+                    links.push(url)
+                }
+            })
+            cy.go('back')
+        })
+        cy.writeFile('element.txt', links);
     })
 })
